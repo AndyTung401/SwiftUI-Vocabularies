@@ -102,14 +102,16 @@ struct ContentView: View {
             } else {
                 List {
                     ForEach(items.filter({newItem.isEmpty ? true : $0.contains(newItem)}), id: \.self) { item in
-                        Button{
-                            showDefinition(item)
-                        } label: {
+                        HStack {
                             Text(item)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(colorScheme == .dark ? Color(UIColor.systemGray6) : Color.white)
+                                .onTapGesture {
+                                    showDefinition(item)
+                                }
+                            Image(systemName: "star")
+                                .foregroundStyle(Color.yellow)
                         }
-                        .buttonStyle(.plain)
                     }
                     .onDelete(perform: deleteItems)
                     .onMove(perform: moveItems)
@@ -164,13 +166,14 @@ struct ContentView: View {
         .popup(isPresented: $settingPopUp) {
             VStack(alignment: .center, spacing: 5) {
                 Text("Go to")
+                    .bold()
                     .frame(width: 250, alignment: .leading)
                 Text("Settings > General > Dictionaries")
                     .frame(width: 250, alignment: .leading)
-                    .padding(.bottom, 30)
+                    .padding(.bottom, 25)
                 Link(destination: URL(string: "app-settings:root=General")!) {
                     Label("Open Settings", systemImage: "arrow.up.forward.app")
-                        .font(.title3)
+                        .font(.body)
                         .foregroundStyle(Color.white)
                         .padding()
                         .background {
@@ -179,22 +182,25 @@ struct ContentView: View {
 
                 }
             }
-            .frame(width: 300)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 75)
+            .frame(width: 320, height: 230)
             .background {
                 VStack{
                     HStack{
                         Spacer()
                         Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 20))
                             .foregroundStyle(.gray)
+                            .padding()
+                            .onTapGesture {
+                                settingPopUp = false
+                            }
                     }
                     Spacer()
                 }
             }
             .background {
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(.white)
+                    .fill(colorScheme == .dark ? Color(.systemGray6):.white)
             }
         } customize: {
             $0
