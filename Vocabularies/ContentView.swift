@@ -225,7 +225,7 @@ struct ContentView: View {
     
     func addItem() {
         if !newItem.isEmpty {
-            items.append(newItem)
+            items.insert(newItem, at: 0)
             newItem = ""
         }
     }
