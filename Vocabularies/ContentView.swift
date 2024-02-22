@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  Translator
+//  Vocabularies
 //
 //  Created by 董承威 on 2024/2/18.
 //
@@ -224,6 +224,14 @@ struct ContentView: View {
                     .closeOnTapOutside(true)
                     .backgroundColor(.black.opacity(0.5))
             }
+        }
+        .padding(.horizontal)
+    }
+    
+    func addItem() {
+        if !newItem.isEmpty {
+            items.insert(newItem, at: 0)
+            newItem = ""
         }
     }
     
