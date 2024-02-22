@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  Vocabularies
+//  Translator
 //
 //  Created by 董承威 on 2024/2/18.
 //
@@ -225,14 +225,6 @@ struct ContentView: View {
                     .backgroundColor(.black.opacity(0.5))
             }
         }
-        .padding(.horizontal)
-    }
-    
-    func addItem() {
-        if !newItem.isEmpty {
-            items.insert(newItem, at: 0)
-            newItem = ""
-        }
     }
     
 //    var addButton: some View {
@@ -258,7 +250,7 @@ struct ContentView: View {
 //    func deleteItems(at offsets: IndexSet) {
 //        items.remove(atOffsets: offsets)
 //    }
-//    
+//
 //    func moveItems(from source: IndexSet, to destination: Int) {
 //        items.move(fromOffsets: source, toOffset: destination)
 //    }
