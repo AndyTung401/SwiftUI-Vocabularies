@@ -32,6 +32,7 @@ struct ContentView: View {
     @State private var newItem = ""
     @State private var isEditing = false
     @State private var settingPopUp = false
+    @FocusState private var isFocused: Bool
     
     func createListView(listIndexInLists: Int) -> some View {
         List {
@@ -45,19 +46,10 @@ struct ContentView: View {
         NavigationStack {
             VStack {
                 HStack {
-                    Button{
-                        settingPopUp = true
-                    } label: {
-                        Image(systemName: "gear")
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.gray)
-                    .padding(.leading, 7)
-                    .padding(.trailing, -8)
                     TextField("Look up something...", text: $newItem)
                         .padding(7)
                         .padding(.horizontal, 25)
-                        .background(Color(.systemGray6))
+                        .background(colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray5))
                         .cornerRadius(10)
                         .overlay(
                             HStack {
@@ -77,9 +69,16 @@ struct ContentView: View {
                                 }
                             }
                         )
-                        .padding(.horizontal, 10)
+                        .focused($isFocused)
                         .onTapGesture {
                             self.isEditing = true
+                            isFocused = true
+                        }
+                        .submitLabel(.search)
+                        .onSubmit{
+                            self.isEditing = false
+                            showDefinition(newItem)
+                            newItem = ""
                         }
                     if isEditing {
                         Button{
@@ -87,25 +86,40 @@ struct ContentView: View {
                             self.newItem = ""
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         } label: {
-                            Text("Done")
+                            Text("Cancel")
                         }
+                        .buttonStyle(.plain)
+                        .padding(.leading, -7)
                         .padding(.trailing, 10)
                     }
-                }//Hstack
-                .frame(height: 70)
-                .padding(.horizontal, 5)
-                .background(Color(.systemBackground))
+                }//Textfield Hstack
+                .padding(.vertical, 10)
+                .padding(.horizontal, 15)
                 
-                List{
-                    ForEach(Array(Lists.enumerated()), id: \.element.id){ listIndex, _ in
-                        NavigationLink{
-                            createListView(listIndexInLists: listIndex)
-                                .navigationTitle(Lists[listIndex].name)
-                        } label: {
-                            Text(Lists[listIndex].name)
-                        }
+                List {
+                    Section {
+                        ForEach(Array(Lists.enumerated()), id: \.element.id){ listIndex, _ in
+                                NavigationLink{
+                                    createListView(listIndexInLists: listIndex)
+                                        .navigationTitle(Lists[listIndex].name)
+                                } label: {
+                                    Text(Lists[listIndex].name)
+                                        .foregroundColor(.black)
+                                }
+                        }//ForEach
+                    } header: {
+                        Text("My Lists").font(.title).foregroundStyle(Color(.black))
                     }
                 }
+                
+                if !isEditing {
+                    Text("Total: \(self.Lists.count) lists")
+                        .font(.callout)
+                        .foregroundStyle(Color.gray)
+                        .padding()
+                }
+            }//Vstack
+            
                 
                 
                 
@@ -144,9 +158,14 @@ struct ContentView: View {
     //                    .foregroundStyle(Color.gray)
     //                    .padding()
     //            }
-            }//Vstack
+
             .background(colorScheme == .dark ? Color.black : Color(UIColor.systemGray6))
-            .navigationTitle("Home Page")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Text("test")
+                }
+            }
+
             .animation(.easeInOut, value: isEditing)
     //        .overlay {
     //            if isEditing {
