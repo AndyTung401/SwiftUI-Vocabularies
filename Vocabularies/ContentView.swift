@@ -44,7 +44,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                HStack{
+                HStack {
                     Button{
                         settingPopUp = true
                     } label: {
@@ -98,8 +98,11 @@ struct ContentView: View {
                 
                 List{
                     ForEach(Array(Lists.enumerated()), id: \.element.id){ listIndex, _ in
-                        NavigationLink(Lists[listIndex].name){
+                        NavigationLink{
                             createListView(listIndexInLists: listIndex)
+                                .navigationTitle(Lists[listIndex].name)
+                        } label: {
+                            Text(Lists[listIndex].name)
                         }
                     }
                 }
@@ -143,6 +146,7 @@ struct ContentView: View {
     //            }
             }//Vstack
             .background(colorScheme == .dark ? Color.black : Color(UIColor.systemGray6))
+            .navigationTitle("Home Page")
             .animation(.easeInOut, value: isEditing)
     //        .overlay {
     //            if isEditing {
