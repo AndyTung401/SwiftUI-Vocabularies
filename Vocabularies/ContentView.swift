@@ -29,14 +29,16 @@ struct ContentView: View {
                                                               list.elementInlist(string: "word2inlist1", starred: false, done: false)]),
                                 list(name: "list2", element: [list.elementInlist(string: "word1inlist2", starred: false, done: false)])]
     let userDefaults = UserDefaults.standard
-    @State private var newItem = ""
+    @State private var searchbarItem = ""
     @State private var isEditing = false
     @State private var settingPopUp = false
     @FocusState private var isFocused: Bool
+    @State private var newItem = ""
+    @State private var showingAlert = false
     
     func createListView(listIndexInLists: Int) -> some View {
         List {
-            ForEach(Array(Lists[listIndexInLists].element.enumerated()), id: \.element.id) { itemIndex, _ in
+            ForEach(Array(Lists[listIndexInLists].element.indices), id: \.self) { itemIndex in
                 Text(Lists[listIndexInLists].element[itemIndex].string)
             }
         }
@@ -46,7 +48,7 @@ struct ContentView: View {
         NavigationStack {
             VStack {
                 HStack {
-                    TextField("Look up something...", text: $newItem)
+                    TextField("Look up something...", text: $searchbarItem)
                         .padding(7)
                         .padding(.horizontal, 25)
                         .background(colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray5))
@@ -59,7 +61,7 @@ struct ContentView: View {
                                 Spacer()
                                 if isEditing {
                                     Button{
-                                        self.newItem = ""
+                                        self.searchbarItem = ""
                                     } label: {
                                         Image(systemName: "xmark.circle.fill")
                                             .foregroundColor(.gray)
@@ -77,19 +79,17 @@ struct ContentView: View {
                         .submitLabel(.search)
                         .onSubmit{
                             self.isEditing = false
-                            showDefinition(newItem)
-                            newItem = ""
+                            showDefinition(searchbarItem)
+                            searchbarItem = ""
                         }
                     if isEditing {
                         Button{
                             self.isEditing = false
-                            self.newItem = ""
+                            self.searchbarItem = ""
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         } label: {
                             Text("Cancel")
                         }
-                        .buttonStyle(.plain)
-                        .padding(.leading, -7)
                         .padding(.trailing, 10)
                     }
                 }//Textfield Hstack
@@ -98,17 +98,36 @@ struct ContentView: View {
                 
                 List {
                     Section {
-                        ForEach(Array(Lists.enumerated()), id: \.element.id){ listIndex, _ in
+                        ForEach(Array(Lists.indices), id: \.self){ listIndex in
                                 NavigationLink{
                                     createListView(listIndexInLists: listIndex)
                                         .navigationTitle(Lists[listIndex].name)
                                 } label: {
                                     Text(Lists[listIndex].name)
-                                        .foregroundColor(.black)
                                 }
                         }//ForEach
+                        .onDelete(perform: deleteItems)
+                        .onMove(perform: moveItems)
                     } header: {
-                        Text("My Lists").font(.title).foregroundStyle(Color(.black))
+                        HStack{
+                            Text("My Lists").font(.title).foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.black)).padding(.bottom, 5)
+                            Spacer()
+                            Button {
+                                showingAlert.toggle()
+                            } label: {
+                                Image(systemName: "plus")
+                            }
+                            .alert("Enter your name", isPresented: $showingAlert) {
+                                TextField("Enter your name", text: $newItem)
+                                Button("OK") {addItem()}
+                                Button("Cancel", role: .cancel) {
+                                    showingAlert.toggle()
+                                    newItem = ""
+                                }
+                            }
+
+                            EditButton().padding(5)
+                        }.textCase(nil)
                     }
                 }
                 
@@ -124,7 +143,7 @@ struct ContentView: View {
                 
                 
     //            if Lists.count==0{
-    //                if newItem==""{
+    //                if searchbarItem==""{
     //                    HStack {
     //                        Image(systemName: "arrow.up")
     //                        Text("Enter a new vocabulary to the list")
@@ -134,7 +153,7 @@ struct ContentView: View {
     //                Spacer()
     //            } else {
     //                List {
-    //                    ForEach(items.filter({newItem.isEmpty ? true : $0.contains(newItem)}), id: \.self) { item in
+    //                    ForEach(items.filter({searchbarItem.isEmpty ? true : $0.contains(searchbarItem)}), id: \.self) { item in
     //                        HStack {
     //                            Text(Lists)
     //                                .frame(maxWidth: .infinity, alignment: .leading)
@@ -162,7 +181,12 @@ struct ContentView: View {
             .background(colorScheme == .dark ? Color.black : Color(UIColor.systemGray6))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Text("test")
+                    Button {
+                        return
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+
                 }
             }
 
@@ -173,7 +197,7 @@ struct ContentView: View {
     //                    Spacer()
     //                    VStack(alignment: .trailing) {
     //                        Spacer()
-    //                        if items.count == 0 && !(newItem==""){
+    //                        if items.count == 0 && !(searchbarItem==""){
     //                            HStack(spacing:3){
     //                                Image(systemName: "arrow.down.right")
     //                                Text("Tap to Look up / Append")
@@ -183,7 +207,7 @@ struct ContentView: View {
     //                        }
     //                        HStack {
     //                            Button{
-    //                                showDefinition(newItem)
+    //                                showDefinition(searchbarItem)
     //                            } label: {
     //                                Image(systemName: "character.book.closed.fill")
     //                                    .foregroundStyle(.brown.gradient)
@@ -250,33 +274,21 @@ struct ContentView: View {
         }
     }
     
-//    var addButton: some View {
-//        HStack {
-//            TextField("Enter new item", text: $newItem)
-//                .padding(.vertical, 8)
-//            Button{
-//                addItem()
-//            } label: {
-//                Text("Add")
-//            }
-//        }
-//        .padding(.horizontal)
-//    }
     
-//    func addItem() {
-//        if !newItem.isEmpty {
-//            items.append(newItem)
-//            newItem = ""
-//        }
-//    }
+    func addItem() -> Void{
+        if !newItem.isEmpty {
+            Lists.append(list(name: newItem, element: []))
+            newItem = ""
+        }
+    }
     
-//    func deleteItems(at offsets: IndexSet) {
-//        items.remove(atOffsets: offsets)
-//    }
-//
-//    func moveItems(from source: IndexSet, to destination: Int) {
-//        items.move(fromOffsets: source, toOffset: destination)
-//    }
+    func deleteItems(at offsets: IndexSet) {
+        Lists.remove(atOffsets: offsets)
+    }
+
+    func moveItems(from source: IndexSet, to destination: Int) {
+        Lists.move(fromOffsets: source, toOffset: destination)
+    }
     
     func showDefinition(_ word: String){
         UIApplication
