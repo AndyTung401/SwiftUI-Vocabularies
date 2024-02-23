@@ -30,11 +30,11 @@ struct ContentView: View {
                                 list(name: "list2", element: [list.elementInlist(string: "word1inlist2", starred: false, done: false)])]
     let userDefaults = UserDefaults.standard
     @State private var searchbarItem = ""
-    @State private var isEditing = false
     @State private var settingPopUp = false
-    @FocusState private var isFocused: Bool
+    @State private var isSearching = false
     @State private var newItem = ""
     @State private var showingAlert = false
+    @State private var showDict = false
     
     func createListView(listIndexInLists: Int) -> some View {
         List {
@@ -47,54 +47,8 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                HStack {
-                    TextField("Look up something...", text: $searchbarItem)
-                        .padding(7)
-                        .padding(.horizontal, 25)
-                        .background(colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray5))
-                        .cornerRadius(10)
-                        .overlay(
-                            HStack {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundStyle(.gray)
-                                    .padding(.leading, 8)
-                                Spacer()
-                                if isEditing {
-                                    Button{
-                                        self.searchbarItem = ""
-                                    } label: {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .foregroundColor(.gray)
-                                            .padding(.trailing, 8)
-                                    }
-                                    .transition(.move(edge: .trailing).combined(with: .opacity))
-                                }
-                            }
-                        )
-                        .focused($isFocused)
-                        .onTapGesture {
-                            self.isEditing = true
-                            isFocused = true
-                        }
-                        .submitLabel(.search)
-                        .onSubmit{
-                            self.isEditing = false
-                            showDefinition(searchbarItem)
-                            searchbarItem = ""
-                        }
-                    if isEditing {
-                        Button{
-                            self.isEditing = false
-                            self.searchbarItem = ""
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        } label: {
-                            Text("Cancel")
-                        }
-                        .padding(.trailing, 10)
-                    }
-                }//Textfield Hstack
-                .padding(.vertical, 10)
-                .padding(.horizontal, 15)
+
+                
                 
                 List {
                     Section {
@@ -130,8 +84,14 @@ struct ContentView: View {
                         }.textCase(nil)
                     }
                 }
+                .searchable(text: $searchbarItem, isPresented: $isSearching, prompt: "Look up something...")
+                .onSubmit(of: .search) {
+                    showDefinition(searchbarItem)
+                    isSearching = false
+                    searchbarItem = ""
+                }
                 
-                if !isEditing {
+                if !isSearching {
                     Text("Total: \(self.Lists.count) lists")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
@@ -190,7 +150,6 @@ struct ContentView: View {
                 }
             }
 
-            .animation(.easeInOut, value: isEditing)
     //        .overlay {
     //            if isEditing {
     //                HStack {
