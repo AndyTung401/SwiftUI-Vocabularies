@@ -23,6 +23,7 @@ struct list: Hashable, Codable, Identifiable {
 
 struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.editMode) private var editMode
     let userDefaults = UserDefaults.standard
     @State private var searchbarItem = ""
     @State private var settingPopUp = false
@@ -30,21 +31,28 @@ struct ContentView: View {
     @State private var newItem = ""
     @State private var addingNewListAlert = false
     @State private var addingNewWordAlert = false
+    @State private var showingDeleteAlert = false
     @State private var showDict = false
-    @State var Lists: [list] = [list(name: "list1", element: [list.elementInlist(string: "word1inlist1", starred: false, done: false),
-                                                              list.elementInlist(string: "word2inlist1", starred: false, done: false)]),
-                                list(name: "list2", element: [list.elementInlist(string: "word1inlist2", starred: false, done: false)])]
+    @State var Lists: [list] = [list(name: "list1", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
+                                                              list.elementInlist(string: "You can swipe left to remove an item", starred: false, done: false),
+                                                              list.elementInlist(string: "Tap and Hold to rearrange", starred: false, done: false),
+                                                              list.elementInlist(string: "↓ Tap on a item to expand definitions", starred: false, done: false),
+                                                              list.elementInlist(string: "Apple", starred: false, done: false)]),
+                                list(name: "list2", element: [list.elementInlist(string: "hello", starred: false, done: false)])]
     
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
             List {
-                ForEach(Array(Lists[listIndexInLists].element.filter({searchbarItem == "" ? true : $0.string == searchbarItem}).indices), id: \.self) { itemIndex in
-                    HStack {
-                        Text(Lists[listIndexInLists].element[itemIndex].string)
-                        Color(colorScheme == .dark ? .systemGray6 : .white)
-                    }
-                    .onTapGesture {
-                        showDefinition(Lists[listIndexInLists].element[itemIndex].string)
+                ForEach(Array(Lists[listIndexInLists].element.indices), id: \.self) { itemIndex in
+                    if Lists[listIndexInLists].element[itemIndex].string.contains(searchbarItem) || searchbarItem == ""{
+                        HStack {
+                            Text(Lists[listIndexInLists].element[itemIndex].string)
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            showDefinition(Lists[listIndexInLists].element[itemIndex].string)
+                        }
                     }
                 }
                 .onDelete(perform: { indexSet in
@@ -55,21 +63,50 @@ struct ContentView: View {
                 })
             }
             .searchable(text: $searchbarItem, isPresented: $isSearching, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search for something...")
-
+            
+            VStack {
+                Spacer()
+                if !isSearching && !addingNewWordAlert{
+                    Text("Total: \(Lists[listIndexInLists].element.count) items")
+                        .font(.callout)
+                        .foregroundStyle(Color.gray)
+                        .padding()
+                }
+            }
+            
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
                     Button {
-                        Lists[listIndexInLists].element.append(list.elementInlist(string: searchbarItem, starred:false, done: false))
+                        if isSearching && !searchbarItem.isEmpty {
+                            Lists[listIndexInLists].element.append(list.elementInlist(string: searchbarItem, starred:false, done: false))
+                            searchbarItem = ""
+                        } else if !isSearching || isSearching && searchbarItem.isEmpty {
+                            addingNewWordAlert = true
+                        }
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 60))
                             .foregroundStyle(.cyan.gradient)
                     }
+                    .opacity(addingNewWordAlert ? 0 : 1)
                     .padding()
+                    .alert("Add a word", isPresented: $addingNewWordAlert) {
+                        TextField("Enter something", text: $newItem)
+                        Button("OK") {
+                            if !newItem.isEmpty {
+                                Lists[listIndexInLists].element.append(list.elementInlist(string: newItem, starred:false, done: false))
+                            }
+                            newItem = ""
+                        }
+                        Button("Cancel", role: .cancel) {
+                            addingNewWordAlert = false
+                            newItem = ""
+                        }
+                    }
                 }
-            }.opacity(isSearching ? 1 : 0)
+            }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -127,7 +164,7 @@ struct ContentView: View {
                     searchbarItem = ""
                 }
                 
-                if !isSearching {
+                if !isSearching && !addingNewListAlert{
                     Text("Total: \(Lists.count) lists")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
