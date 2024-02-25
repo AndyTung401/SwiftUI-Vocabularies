@@ -157,7 +157,7 @@ struct ContentView: View {
                         }.textCase(nil)
                     }
                 }
-                .searchable(text: $searchbarItem, isPresented: $isSearching, prompt: "Look up something...")
+                .searchable(text: $searchbarItem, isPresented: $isSearching, placement: .navigationBarDrawer(displayMode: .always), prompt: "Look up something...")
                 .onSubmit(of: .search) {
                     showDefinition(searchbarItem)
                     isSearching = false
