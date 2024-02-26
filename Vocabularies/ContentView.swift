@@ -49,10 +49,7 @@ struct ContentView: View {
                             Image(systemName: Lists[listIndexInLists].element[itemIndex].done ? "checkmark.circle.fill" : "circle").foregroundStyle(Lists[listIndexInLists].element[itemIndex].done ? .green : .gray)
                                 .font(.system(size: 20))
                                 .onTapGesture {
-                                    Lists[listIndexInLists].element[itemIndex].done.toggle()
-                                    if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
-                                        Lists[listIndexInLists].element[itemIndex].starred.toggle()
-                                    }
+                                    toggleDone(listIndexInLists, itemIndex)
                                 }
                             HStack{
                                 Text(Lists[listIndexInLists].element[itemIndex].string)
@@ -64,18 +61,12 @@ struct ContentView: View {
                             Image(systemName: Lists[listIndexInLists].element[itemIndex].starred ? "star.fill" : "star").foregroundStyle(Color.yellow)
                                 .font(.system(size: 20))
                                 .onTapGesture {
-                                    Lists[listIndexInLists].element[itemIndex].starred.toggle()
-                                    if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
-                                        Lists[listIndexInLists].element[itemIndex].done.toggle()
-                                    }
+                                    toggleStarred(listIndexInLists, itemIndex)
                                 }
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             Button {
-                                Lists[listIndexInLists].element[itemIndex].done.toggle()
-                                if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
-                                    Lists[listIndexInLists].element[itemIndex].starred.toggle()
-                                }
+                                toggleDone(listIndexInLists, itemIndex)
                             } label: {
                                 Image(systemName: "checkmark.circle")
                             }
@@ -83,10 +74,7 @@ struct ContentView: View {
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button {
-                                Lists[listIndexInLists].element[itemIndex].starred.toggle()
-                                if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
-                                    Lists[listIndexInLists].element[itemIndex].done.toggle()
-                                }
+                                toggleStarred(listIndexInLists, itemIndex)
                             } label: {
                                 Image(systemName: "star")
                             }
@@ -300,6 +288,20 @@ struct ContentView: View {
         UIApplication
             .shared.connectedScenes.map({$0 as? UIWindowScene}).compactMap({$0}).first?.windows.first?
             .rootViewController?.present(UIReferenceLibraryViewController(term: word), animated: true, completion: nil)
+    }
+    
+    func toggleStarred(_ listIndexInLists: Int, _ itemIndex: Int){
+        Lists[listIndexInLists].element[itemIndex].starred.toggle()
+        if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
+            Lists[listIndexInLists].element[itemIndex].done.toggle()
+        }
+    }
+    
+    func toggleDone(_ listIndexInLists: Int, _ itemIndex: Int){
+        Lists[listIndexInLists].element[itemIndex].done.toggle()
+        if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
+            Lists[listIndexInLists].element[itemIndex].starred.toggle()
+        }
     }
 }
 
