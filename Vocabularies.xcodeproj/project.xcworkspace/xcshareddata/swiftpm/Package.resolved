@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "colorgrid",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BaherTamer/ColorGrid",
+      "state" : {
+        "branch" : "main",
+        "revision" : "bfd627de2c8a8f434dfa68ea3ba1bc6d4f04016b"
+      }
+    },
+    {
       "identity" : "popupview",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/exyte/PopupView",

@@ -7,10 +7,12 @@
 
 import SwiftUI
 import PopupView
+import ColorGrid
 
 struct list: Hashable, Codable, Identifiable {
     var id = UUID()
     var name: String
+    var color: String
     var element: [elementInlist]
     
     struct elementInlist: Hashable, Codable, Identifiable {
@@ -21,24 +23,63 @@ struct list: Hashable, Codable, Identifiable {
     }
 }
 
+extension Color {
+    static subscript(name: String) -> Color {
+        switch name {
+        case "red":
+            return Color.red
+        case "orange":
+            return Color.orange
+        case "yellow":
+            return Color.yellow
+        case "green":
+            return Color.green
+        case "cyan":
+            return Color.cyan
+        case "blue":
+            return Color.blue
+        case "indigo":
+            return Color.indigo
+        case "pink":
+            return Color.pink
+        case "purple":
+            return Color.purple
+        case "brown":
+            return Color.brown
+        case "gray":
+            return Color.gray
+        case "mint":
+            return Color(.init(red: 0.8196078431, green: 0.6588235294, blue: 0.6235294118))
+        default:
+            return Color.accentColor
+        }
+    }
+}
+
+
 struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.editMode) private var editMode
     let userDefaults = UserDefaults.standard
     @State private var searchbarItem = ""
-    @State private var settingPopUp = false
     @State private var isSearching = false
     @State private var newItem = ""
     @State private var addingNewListAlert = false
     @State private var addingNewWordAlert = false
     @State private var showDict = false
     @State private var sortingMode = 0 //0:none
-    @State var Lists: [list] = [list(name: "list1", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
+    @State private var colorPicker: Color = .red
+    @State private var showColorPicker = false
+    @State private var editingListIdex = 0
+    @State var Lists: [list] = [list(name: "list1", color: "mint", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
                                                               list.elementInlist(string: "You can swipe left to remove an item", starred: false, done: false),
                                                               list.elementInlist(string: "Tap and Hold to rearrange", starred: false, done: false),
                                                               list.elementInlist(string: "↓ Tap on a item to expand definitions", starred: false, done: false),
                                                               list.elementInlist(string: "Apple", starred: false, done: false)]),
-                                list(name: "list2", element: [list.elementInlist(string: "hello", starred: false, done: false)])]
+                                list(name: "list2", color: "orange", element: [list.elementInlist(string: "Constitude", starred: false, done: false),
+                                                              list.elementInlist(string: "Convince", starred: false, done: false),
+                                                              list.elementInlist(string: "Delegate", starred: false, done: false),
+                                                              list.elementInlist(string: "Abbreviate", starred: false, done: false)])]
     
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
@@ -53,6 +94,8 @@ struct ContentView: View {
                                 }
                             HStack{
                                 Text(Lists[listIndexInLists].element[itemIndex].string)
+                                    .opacity(Lists[listIndexInLists].element[itemIndex].done ? 0.4 : 1)
+                                    .strikethrough(Lists[listIndexInLists].element[itemIndex].done)
                                 Spacer()
                             }
                             .onTapGesture {
@@ -162,14 +205,24 @@ struct ContentView: View {
                                     createListView(listIndexInLists: listIndex)
                                         .navigationTitle(Lists[listIndex].name)
                                 } label: {
-                                    Text(Lists[listIndex].name)
-                                        .swipeActions(allowsFullSwipe: false) {
-                                            Button(role: .destructive) {
-                                                Lists.remove(at: listIndex)
-                                            } label: {
-                                                Image(systemName: "trash")
-                                            }
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "circle.fill")
+                                            .foregroundStyle(Color[Lists[listIndex].color])
+                                            .font(.largeTitle)
+                                        Text(Lists[listIndex].name)
+                                            .font(.body)
+                                    }
+                                    .onTapGesture {
+                                        showColorPicker = true
+                                        editingListIdex = listIndex
+                                    }
+                                    .swipeActions(allowsFullSwipe: false) {
+                                        Button(role: .destructive) {
+                                            Lists.remove(at: listIndex)
+                                        } label: {
+                                            Image(systemName: "trash")
                                         }
+                                    }
                                 }
                         }//ForEach
                         .onMove(perform: moveList)
@@ -220,50 +273,30 @@ struct ContentView: View {
 
                 }
             }
-            .popup(isPresented: $settingPopUp) {
-                VStack(alignment: .center, spacing: 5) {
-                    Text("Go to")
-                        .bold()
-                        .frame(width: 250, alignment: .leading)
-                    Text("Settings > General > Dictionaries")
-                        .frame(width: 250, alignment: .leading)
-                        .padding(.bottom, 25)
-                    Link(destination: URL(string: "app-settings:root=General")!) {
-                        Label("Open Settings", systemImage: "arrow.up.forward.app")
-                            .font(.body)
-                            .foregroundStyle(Color.white)
-                            .padding()
-                            .background {
-                                RoundedRectangle(cornerRadius: 10)
-                            }
-
-                    }
-                }
-                .frame(width: 320, height: 230)
-                .background {
-                    VStack{
-                        HStack{
-                            Spacer()
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 20))
-                                .foregroundStyle(.gray)
-                                .padding()
-                                .onTapGesture {
-                                    settingPopUp = false
-                                }
-                        }
-                        Spacer()
-                    }
+            .popover(isPresented: $showColorPicker) {
+                VStack {
+                    TextField(Lists[editingListIdex].name, text: $Lists[editingListIdex].name)
+                        .multilineTextAlignment(.center)
+                        .font(.largeTitle)
+                        .containerRelativeFrame(.horizontal, count: 5, span: 2, spacing: 0)
+                        .padding(.vertical, 15)
+                        .background(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .fill(
+                                            Color.white.shadow(.inner(color: Color(.systemGray5),radius: 5, x: 2, y: 2))
+                                        )
+                        )
+                    CGPicker(
+                        colors: [.red, .orange, .yellow, .green, .cyan, .blue, .indigo, .pink, .purple, .brown, .gray, Color(.init(red: 0.8196078431, green: 0.6588235294, blue: 0.6235294118))],
+                        selection: $colorPicker
+                    )
+                    .padding()
                 }
                 .background {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(colorScheme == .dark ? Color(.systemGray6):.white)
                 }
-            } customize: {
-                $0
-                    .animation(.snappy)
-                    .closeOnTapOutside(true)
-                    .backgroundColor(.black.opacity(0.5))
+                .padding()
             }
         }
     }
@@ -271,7 +304,7 @@ struct ContentView: View {
     
     func addNewList() -> Void{
         if !newItem.isEmpty {
-            Lists.append(list(name: newItem, element: []))
+            Lists.append(list(name: newItem, color: "blue", element: []))
             newItem = ""
         }
     }
@@ -292,16 +325,16 @@ struct ContentView: View {
     
     func toggleStarred(_ listIndexInLists: Int, _ itemIndex: Int){
         Lists[listIndexInLists].element[itemIndex].starred.toggle()
-        if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
-            Lists[listIndexInLists].element[itemIndex].done.toggle()
-        }
+//        if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
+//            Lists[listIndexInLists].element[itemIndex].done.toggle()
+//        }
     }
     
     func toggleDone(_ listIndexInLists: Int, _ itemIndex: Int){
         Lists[listIndexInLists].element[itemIndex].done.toggle()
-        if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
-            Lists[listIndexInLists].element[itemIndex].starred.toggle()
-        }
+//        if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
+//            Lists[listIndexInLists].element[itemIndex].starred.toggle()
+//        }
     }
 }
 

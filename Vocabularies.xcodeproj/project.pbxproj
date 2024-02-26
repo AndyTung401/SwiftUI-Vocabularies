@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB45545B2B8C88A6004B1111 /* ColorGrid in Frameworks */ = {isa = PBXBuildFile; productRef = CB45545A2B8C88A6004B1111 /* ColorGrid */; };
 		CBC7E3382B822C22009123AB /* VocabulariesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC7E3372B822C22009123AB /* VocabulariesApp.swift */; };
 		CBC7E33A2B822C22009123AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC7E3392B822C22009123AB /* ContentView.swift */; };
 		CBC7E33C2B822C23009123AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CBC7E33B2B822C23009123AB /* Assets.xcassets */; };
@@ -27,6 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB45545B2B8C88A6004B1111 /* ColorGrid in Frameworks */,
 				CBC7E3472B822C77009123AB /* PopupView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,6 +89,7 @@
 			name = Vocabularies;
 			packageProductDependencies = (
 				CBC7E3462B822C77009123AB /* PopupView */,
+				CB45545A2B8C88A6004B1111 /* ColorGrid */,
 			);
 			productName = Vocabularies;
 			productReference = CBC7E3342B822C22009123AB /* Vocabularies.app */;
@@ -118,6 +121,7 @@
 			mainGroup = CBC7E32B2B822C22009123AB;
 			packageReferences = (
 				CBC7E3452B822C77009123AB /* XCRemoteSwiftPackageReference "PopupView" */,
+				CB4554592B8C88A6004B1111 /* XCRemoteSwiftPackageReference "ColorGrid" */,
 			);
 			productRefGroup = CBC7E3352B822C22009123AB /* Products */;
 			projectDirPath = "";
@@ -354,6 +358,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		CB4554592B8C88A6004B1111 /* XCRemoteSwiftPackageReference "ColorGrid" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/BaherTamer/ColorGrid";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		CBC7E3452B822C77009123AB /* XCRemoteSwiftPackageReference "PopupView" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/exyte/PopupView";
@@ -365,6 +377,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		CB45545A2B8C88A6004B1111 /* ColorGrid */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CB4554592B8C88A6004B1111 /* XCRemoteSwiftPackageReference "ColorGrid" */;
+			productName = ColorGrid;
+		};
 		CBC7E3462B822C77009123AB /* PopupView */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = CBC7E3452B822C77009123AB /* XCRemoteSwiftPackageReference "PopupView" */;
