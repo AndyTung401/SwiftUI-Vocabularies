@@ -12,7 +12,6 @@
 		CBC7E33A2B822C22009123AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC7E3392B822C22009123AB /* ContentView.swift */; };
 		CBC7E33C2B822C23009123AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CBC7E33B2B822C23009123AB /* Assets.xcassets */; };
 		CBC7E33F2B822C23009123AB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CBC7E33E2B822C23009123AB /* Preview Assets.xcassets */; };
-		CBC7E3472B822C77009123AB /* PopupView in Frameworks */ = {isa = PBXBuildFile; productRef = CBC7E3462B822C77009123AB /* PopupView */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,7 +28,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB45545B2B8C88A6004B1111 /* ColorGrid in Frameworks */,
-				CBC7E3472B822C77009123AB /* PopupView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,7 +86,6 @@
 			);
 			name = Vocabularies;
 			packageProductDependencies = (
-				CBC7E3462B822C77009123AB /* PopupView */,
 				CB45545A2B8C88A6004B1111 /* ColorGrid */,
 			);
 			productName = Vocabularies;
@@ -120,7 +117,6 @@
 			);
 			mainGroup = CBC7E32B2B822C22009123AB;
 			packageReferences = (
-				CBC7E3452B822C77009123AB /* XCRemoteSwiftPackageReference "PopupView" */,
 				CB4554592B8C88A6004B1111 /* XCRemoteSwiftPackageReference "ColorGrid" */,
 			);
 			productRefGroup = CBC7E3352B822C22009123AB /* Products */;
@@ -366,14 +362,6 @@
 				kind = branch;
 			};
 		};
-		CBC7E3452B822C77009123AB /* XCRemoteSwiftPackageReference "PopupView" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/exyte/PopupView";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.8.5;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -381,11 +369,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CB4554592B8C88A6004B1111 /* XCRemoteSwiftPackageReference "ColorGrid" */;
 			productName = ColorGrid;
-		};
-		CBC7E3462B822C77009123AB /* PopupView */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CBC7E3452B822C77009123AB /* XCRemoteSwiftPackageReference "PopupView" */;
-			productName = PopupView;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

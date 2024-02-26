@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import PopupView
 import ColorGrid
 
 struct list: Hashable, Codable, Identifiable {
@@ -71,6 +70,7 @@ struct ContentView: View {
     @State private var colorPicker: Color = .red
     @State private var showColorPicker = false
     @State private var editingListIdex = 0
+    @State private var selectedIcon = ""
     @State var Lists: [list] = [list(name: "list1", color: "mint", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
                                                               list.elementInlist(string: "You can swipe left to remove an item", starred: false, done: false),
                                                               list.elementInlist(string: "Tap and Hold to rearrange", starred: false, done: false),
@@ -273,31 +273,51 @@ struct ContentView: View {
 
                 }
             }
-            .popover(isPresented: $showColorPicker) {
-                VStack {
-                    TextField(Lists[editingListIdex].name, text: $Lists[editingListIdex].name)
-                        .multilineTextAlignment(.center)
-                        .font(.largeTitle)
-                        .containerRelativeFrame(.horizontal, count: 5, span: 2, spacing: 0)
-                        .padding(.vertical, 15)
-                        .background(
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .fill(
-                                            Color.white.shadow(.inner(color: Color(.systemGray5),radius: 5, x: 2, y: 2))
-                                        )
-                        )
+            .sheet(isPresented: $showColorPicker) {
+                VStack(spacing: 15) {
+                    VStack {
+                        Circle()
+                            .foregroundStyle(Color[Lists[editingListIdex].color].gradient)
+                            .frame(width: 100, height: 100)
+                            .padding(.vertical, 5)
+                        TextField(Lists[editingListIdex].name, text: $Lists[editingListIdex].name)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(Color[Lists[editingListIdex].color])
+                            .font(.title2)
+                            .bold()
+                            .padding(.vertical, 15)
+                            .background(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .fill(
+                                                Color(colorScheme == .dark ? .systemGray4 : .white)
+                                            )
+                            )
+                    }
+                    .padding()
+                    .background {
+                        RoundedRectangle(cornerRadius: 20, style: .circular)
+                            .fill(
+                                Color(colorScheme == .dark ? .systemGray5 : .white)
+                            )
+                    }
                     CGPicker(
                         colors: [.red, .orange, .yellow, .green, .cyan, .blue, .indigo, .pink, .purple, .brown, .gray, Color(.init(red: 0.8196078431, green: 0.6588235294, blue: 0.6235294118))],
                         selection: $colorPicker
                     )
                     .padding()
+                    .background {
+                        RoundedRectangle(cornerRadius: 20, style: .circular)
+                            .fill(
+                                Color(colorScheme == .dark ? .systemGray5 : .white)
+                            )
+                    }
                 }
                 .background {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(colorScheme == .dark ? Color(.systemGray6):.white)
-                }
+                }//vstack
                 .padding()
-            }
+            }//sheet
         }
     }
     
