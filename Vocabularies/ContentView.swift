@@ -10,7 +10,7 @@ import PopupView
 
 struct list: Hashable, Codable, Identifiable {
     var id = UUID()
-    var name:String
+    var name: String
     var element: [elementInlist]
     
     struct elementInlist: Hashable, Codable, Identifiable {
@@ -31,8 +31,8 @@ struct ContentView: View {
     @State private var newItem = ""
     @State private var addingNewListAlert = false
     @State private var addingNewWordAlert = false
-    @State private var showingDeleteAlert = false
     @State private var showDict = false
+    @State private var sortingMode = 0 //0:none
     @State var Lists: [list] = [list(name: "list1", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
                                                               list.elementInlist(string: "You can swipe left to remove an item", starred: false, done: false),
                                                               list.elementInlist(string: "Tap and Hold to rearrange", starred: false, done: false),
@@ -46,22 +46,65 @@ struct ContentView: View {
                 ForEach(Array(Lists[listIndexInLists].element.indices), id: \.self) { itemIndex in
                     if Lists[listIndexInLists].element[itemIndex].string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
-                            Text(Lists[listIndexInLists].element[itemIndex].string)
-                            Spacer()
+                            Image(systemName: Lists[listIndexInLists].element[itemIndex].done ? "checkmark.circle.fill" : "circle").foregroundStyle(Lists[listIndexInLists].element[itemIndex].done ? .green : .gray)
+                                .font(.system(size: 20))
+                                .onTapGesture {
+                                    Lists[listIndexInLists].element[itemIndex].done.toggle()
+                                    if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
+                                        Lists[listIndexInLists].element[itemIndex].starred.toggle()
+                                    }
+                                }
+                            HStack{
+                                Text(Lists[listIndexInLists].element[itemIndex].string)
+                                Spacer()
+                            }
+                            .onTapGesture {
+                                showDefinition(Lists[listIndexInLists].element[itemIndex].string)
+                            }
+                            Image(systemName: Lists[listIndexInLists].element[itemIndex].starred ? "star.fill" : "star").foregroundStyle(Color.yellow)
+                                .font(.system(size: 20))
+                                .onTapGesture {
+                                    Lists[listIndexInLists].element[itemIndex].starred.toggle()
+                                    if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
+                                        Lists[listIndexInLists].element[itemIndex].done.toggle()
+                                    }
+                                }
+                        }
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button {
+                                Lists[listIndexInLists].element[itemIndex].done.toggle()
+                                if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
+                                    Lists[listIndexInLists].element[itemIndex].starred.toggle()
+                                }
+                            } label: {
+                                Image(systemName: "checkmark.circle")
+                            }
+                            .tint(.green)
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button {
+                                Lists[listIndexInLists].element[itemIndex].starred.toggle()
+                                if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
+                                    Lists[listIndexInLists].element[itemIndex].done.toggle()
+                                }
+                            } label: {
+                                Image(systemName: "star")
+                            }
+                            .tint(.yellow)
+                            Button(role: .destructive) {
+                                Lists[listIndexInLists].element.remove(at: itemIndex)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
                         }
                         .contentShape(Rectangle())
-                        .onTapGesture {
-                            showDefinition(Lists[listIndexInLists].element[itemIndex].string)
-                        }
                     }
                 }
-                .onDelete(perform: { indexSet in
-                    Lists[listIndexInLists].element.remove(at: indexSet.first!)
-                })
                 .onMove(perform: { indices, newOffset in
                     Lists[listIndexInLists].element.move(fromOffsets: indices, toOffset: newOffset)
                 })
             }
+            .scrollContentBackground(.hidden)
             .searchable(text: $searchbarItem, isPresented: $isSearching, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search for something...")
             
             VStack {
@@ -118,6 +161,7 @@ struct ContentView: View {
 
             }
         }
+        .background(colorScheme == .dark ? Color.black : Color(UIColor.systemGray6))
     }
     
     var body: some View {
@@ -131,9 +175,15 @@ struct ContentView: View {
                                         .navigationTitle(Lists[listIndex].name)
                                 } label: {
                                     Text(Lists[listIndex].name)
+                                        .swipeActions(allowsFullSwipe: false) {
+                                            Button(role: .destructive) {
+                                                Lists.remove(at: listIndex)
+                                            } label: {
+                                                Image(systemName: "trash")
+                                            }
+                                        }
                                 }
                         }//ForEach
-                        .onDelete(perform: deleteList)
                         .onMove(perform: moveList)
                     } header: {
                         HStack{
@@ -238,9 +288,9 @@ struct ContentView: View {
         }
     }
     
-    func deleteList(at offsets: IndexSet) {
-        Lists.remove(atOffsets: offsets)
-    }
+//    func deleteList(at offsets: IndexSet) {
+//        Lists.remove(atOffsets: offsets)
+//    }
 
     func moveList(from source: IndexSet, to destination: Int) {
         Lists.move(fromOffsets: source, toOffset: destination)
