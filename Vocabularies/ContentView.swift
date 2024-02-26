@@ -166,7 +166,7 @@ struct ContentView: View {
 
             }
         }
-        .background(colorScheme == .dark ? Color.black : Color(UIColor.systemGray6))
+        .background(colorScheme == .dark ? Color.black : Color.white)
     }
     
     var body: some View {
