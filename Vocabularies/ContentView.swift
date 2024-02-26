@@ -8,13 +8,14 @@
 import SwiftUI
 import ColorGrid
 
-struct list: Hashable, Codable, Identifiable {
+struct list: Hashable, Identifiable {
     var id = UUID()
     var name: String
-    var color: String
+    var color: Color
+    var icon: String
     var element: [elementInlist]
     
-    struct elementInlist: Hashable, Codable, Identifiable {
+    struct elementInlist: Hashable, Identifiable {
         var id = UUID()
         var string: String
         var starred: Bool
@@ -22,38 +23,7 @@ struct list: Hashable, Codable, Identifiable {
     }
 }
 
-extension Color {
-    static subscript(name: String) -> Color {
-        switch name {
-        case "red":
-            return Color.red
-        case "orange":
-            return Color.orange
-        case "yellow":
-            return Color.yellow
-        case "green":
-            return Color.green
-        case "cyan":
-            return Color.cyan
-        case "blue":
-            return Color.blue
-        case "indigo":
-            return Color.indigo
-        case "pink":
-            return Color.pink
-        case "purple":
-            return Color.purple
-        case "brown":
-            return Color.brown
-        case "gray":
-            return Color.gray
-        case "mint":
-            return Color(.init(red: 0.8196078431, green: 0.6588235294, blue: 0.6235294118))
-        default:
-            return Color.accentColor
-        }
-    }
-}
+let icons = ["list.bullet", "bookmark.fill", "mappin", "graduationcap.fill", "backpack.fill", "pencil.and.ruler.fill", "doc.fill", "book.fill", "note.text", "textformat.alt", "highlighter", "book.pages.fill"]
 
 
 struct ContentView: View {
@@ -67,16 +37,16 @@ struct ContentView: View {
     @State private var addingNewWordAlert = false
     @State private var showDict = false
     @State private var sortingMode = 0 //0:none
-    @State private var colorPicker: Color = .red
     @State private var showColorPicker = false
     @State private var editingListIdex = 0
-    @State private var selectedIcon = ""
-    @State var Lists: [list] = [list(name: "list1", color: "mint", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
-                                                              list.elementInlist(string: "You can swipe left to remove an item", starred: false, done: false),
+    @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
+                                                              list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
+                                                              list.elementInlist(string: "Swipe right to chack an item", starred: false, done: false),
                                                               list.elementInlist(string: "Tap and Hold to rearrange", starred: false, done: false),
-                                                              list.elementInlist(string: "↓ Tap on a item to expand definitions", starred: false, done: false),
-                                                              list.elementInlist(string: "Apple", starred: false, done: false)]),
-                                list(name: "list2", color: "orange", element: [list.elementInlist(string: "Constitude", starred: false, done: false),
+                                                              list.elementInlist(string: "↓ Tap on it for definitions", starred: false, done: false),
+                                                              list.elementInlist(string: "Apple", starred: false, done: false),
+                                                              list.elementInlist(string: "Try the search bar", starred: false, done: false)]),
+                                list(name: "Tap on title for settings", color: .orange, icon: "mappin", element: [list.elementInlist(string: "Constitude", starred: false, done: false),
                                                               list.elementInlist(string: "Convince", starred: false, done: false),
                                                               list.elementInlist(string: "Delegate", starred: false, done: false),
                                                               list.elementInlist(string: "Abbreviate", starred: false, done: false)])]
@@ -96,8 +66,9 @@ struct ContentView: View {
                                 Text(Lists[listIndexInLists].element[itemIndex].string)
                                     .opacity(Lists[listIndexInLists].element[itemIndex].done ? 0.4 : 1)
                                     .strikethrough(Lists[listIndexInLists].element[itemIndex].done)
-                                Spacer()
+                                    Spacer()
                             }
+                            .contentShape(Rectangle())
                             .onTapGesture {
                                 showDefinition(Lists[listIndexInLists].element[itemIndex].string)
                             }
@@ -133,6 +104,8 @@ struct ContentView: View {
                 }
                 .onMove(perform: { indices, newOffset in
                     Lists[listIndexInLists].element.move(fromOffsets: indices, toOffset: newOffset)
+                    isSearching = false
+                    searchbarItem = ""
                 })
             }
             .scrollContentBackground(.hidden)
@@ -141,7 +114,7 @@ struct ContentView: View {
             VStack {
                 Spacer()
                 if !isSearching && !addingNewWordAlert{
-                    Text("Total: \(Lists[listIndexInLists].element.count) items")
+                    Text("\(Lists[listIndexInLists].element.count) items")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
                         .padding()
@@ -205,30 +178,50 @@ struct ContentView: View {
                                     createListView(listIndexInLists: listIndex)
                                         .navigationTitle(Lists[listIndex].name)
                                 } label: {
-                                    HStack(spacing: 10) {
-                                        Image(systemName: "circle.fill")
-                                            .foregroundStyle(Color[Lists[listIndex].color])
-                                            .font(.largeTitle)
-                                        Text(Lists[listIndex].name)
-                                            .font(.body)
-                                    }
-                                    .onTapGesture {
-                                        showColorPicker = true
-                                        editingListIdex = listIndex
-                                    }
-                                    .swipeActions(allowsFullSwipe: false) {
-                                        Button(role: .destructive) {
-                                            Lists.remove(at: listIndex)
-                                        } label: {
-                                            Image(systemName: "trash")
-                                        }
-                                    }
+                                    HStack {
+                                        HStack {
+                                            Image(systemName: "circle.fill")
+                                                .foregroundStyle(Lists[listIndex].color)
+                                                .font(.largeTitle)
+                                                .overlay {
+                                                    Image(systemName: Lists[listIndex].icon)
+                                                        .font(.headline)
+                                                        .foregroundStyle(.white)
+                                                }
+                                                .padding(-1)
+                                                .padding(.leading, -3)
+                                            Text(Lists[listIndex].name)
+                                                .font(.body)
+                                        }//hstack for clickable elements
+                                        .onTapGesture {
+                                            editingListIdex = listIndex
+                                            showColorPicker = true
+                                        }//on tap gesture
+                                        .swipeActions(allowsFullSwipe: false) {
+                                            Button(role: .destructive) {
+                                                Lists.remove(at: listIndex)
+                                            } label: {
+                                                Image(systemName: "trash")
+                                            }
+                                        }//swipe actions
+                                        Spacer()
+                                        Text("\(Lists[listIndex].element.count)")
+                                            .foregroundStyle(.gray)
+                                    }//Hstacl
                                 }
                         }//ForEach
-                        .onMove(perform: moveList)
+                        .onMove(perform: {indicies, newOffest in
+                            moveList(from: indicies, to: newOffest)
+                            isSearching = false
+                            searchbarItem = ""
+                        })
                     } header: {
                         HStack{
-                            Text("My Lists").font(.title).foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.black)).padding(.bottom, 5)
+                            Text("My Lists")
+                                .font(.title)
+                                .foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.black))
+                                .padding(.bottom, 5)
+                                .bold()
                             Spacer()
                             Button {
                                 addingNewListAlert.toggle()
@@ -256,7 +249,7 @@ struct ContentView: View {
                 }
                 
                 if !isSearching && !addingNewListAlert{
-                    Text("Total: \(Lists.count) lists")
+                    Text("\(Lists.count) lists")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
                         .padding()
@@ -275,21 +268,28 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showColorPicker) {
                 VStack(spacing: 15) {
-                    VStack {
+                    VStack(spacing: 10) {
                         Circle()
-                            .foregroundStyle(Color[Lists[editingListIdex].color].gradient)
+                            .fill(Lists[editingListIdex].color.gradient)
+                            .shadow(radius: 5, x: 0, y: 0)
                             .frame(width: 100, height: 100)
-                            .padding(.vertical, 5)
+                            .padding(.vertical, 10)
+                            .overlay {
+                                Image(systemName: Lists[editingListIdex].icon)
+                                    .bold()
+                                    .foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.systemGray6))
+                                    .font(.system(size: 50))
+                            }
                         TextField(Lists[editingListIdex].name, text: $Lists[editingListIdex].name)
                             .multilineTextAlignment(.center)
-                            .foregroundStyle(Color[Lists[editingListIdex].color])
+                            .foregroundStyle(Lists[editingListIdex].color)
                             .font(.title2)
                             .bold()
                             .padding(.vertical, 15)
                             .background(
                                         RoundedRectangle(cornerRadius: 20)
                                             .fill(
-                                                Color(colorScheme == .dark ? .systemGray4 : .white)
+                                                Color(colorScheme == .dark ? .systemGray4 : .systemGray6)
                                             )
                             )
                     }
@@ -300,10 +300,48 @@ struct ContentView: View {
                                 Color(colorScheme == .dark ? .systemGray5 : .white)
                             )
                     }
+                    .padding(.top, 25)
                     CGPicker(
                         colors: [.red, .orange, .yellow, .green, .cyan, .blue, .indigo, .pink, .purple, .brown, .gray, Color(.init(red: 0.8196078431, green: 0.6588235294, blue: 0.6235294118))],
-                        selection: $colorPicker
+                        selection: $Lists[editingListIdex].color
                     )
+                    .padding(20)
+                    .background {
+                        RoundedRectangle(cornerRadius: 20, style: .circular)
+                            .fill(
+                                Color(colorScheme == .dark ? .systemGray5 : .white)
+                            )
+                    }
+                    VStack(spacing: 15) {
+                        ForEach(0..<icons.count/6) { row in // create number of rows
+                            HStack(spacing: 5) {
+                                ForEach(0..<6) { column in // create 3 columns
+                                    ZStack {
+                                        Image(systemName: icons[row * 6 + column])
+                                            .foregroundStyle(Color(colorScheme == .dark ? .white : .init(hue: 0, saturation: 0, brightness: 0.3)))
+                                            .bold()
+                                            .font(.title3)
+                                            .frame(width: 40, height: 40)
+                                            .background {
+                                                Circle()
+                                                    .fill(
+                                                        Color(colorScheme == .dark ? .systemGray4 : .systemGray6)
+                                                    )
+                                            }
+                                            .onTapGesture {
+                                                Lists[editingListIdex].icon = icons[row * 6 + column]
+                                            }
+                                        if Lists[editingListIdex].icon == icons[row * 6 + column] {
+                                            Circle()
+                                                .fill(Color.clear)
+                                                .stroke(Color(colorScheme == .dark ? .systemGray2 : .systemGray3), lineWidth: 3)
+                                        }
+                                    }
+                                    .frame(width: 50, height: 50)
+                                }
+                            }
+                        }
+                    }
                     .padding()
                     .background {
                         RoundedRectangle(cornerRadius: 20, style: .circular)
@@ -311,12 +349,15 @@ struct ContentView: View {
                                 Color(colorScheme == .dark ? .systemGray5 : .white)
                             )
                     }
-                }
-                .background {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(colorScheme == .dark ? Color(.systemGray6):.white)
+                    Spacer()
                 }//vstack
                 .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .ignoresSafeArea()
+                .presentationBackground(colorScheme == .dark ? Color(.systemGray6):Color(.systemGray6))
+                .presentationDragIndicator(.visible)
+                .presentationDetents([.fraction(0.9)])
+                .presentationCornerRadius(15)
             }//sheet
         }
     }
@@ -324,7 +365,7 @@ struct ContentView: View {
     
     func addNewList() -> Void{
         if !newItem.isEmpty {
-            Lists.append(list(name: newItem, color: "blue", element: []))
+            Lists.append(list(name: newItem, color: .blue, icon: "List.bullet", element: []))
             newItem = ""
         }
     }
