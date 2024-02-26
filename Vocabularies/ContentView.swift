@@ -33,11 +33,10 @@ struct ContentView: View {
     @State private var searchbarItem = ""
     @State private var isSearching = false
     @State private var newItem = ""
-    @State private var addingNewListAlert = false
     @State private var addingNewWordAlert = false
     @State private var showDict = false
     @State private var sortingMode = 0 //0:none
-    @State private var showColorPicker = false
+    @State private var showPopUp = false
     @State private var editingListIdex = 0
     @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
@@ -108,6 +107,7 @@ struct ContentView: View {
                     searchbarItem = ""
                 })
             }
+            .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .searchable(text: $searchbarItem, isPresented: $isSearching, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search for something...")
             
@@ -155,6 +155,7 @@ struct ContentView: View {
                 }
             }
         }
+        .animation(addingNewWordAlert == false ? .easeInOut(duration: 0.2) : .none, value: addingNewWordAlert)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -195,7 +196,7 @@ struct ContentView: View {
                                         }//hstack for clickable elements
                                         .onTapGesture {
                                             editingListIdex = listIndex
-                                            showColorPicker = true
+                                            showPopUp = true
                                         }//on tap gesture
                                         .swipeActions(allowsFullSwipe: false) {
                                             Button(role: .destructive) {
@@ -224,19 +225,12 @@ struct ContentView: View {
                                 .bold()
                             Spacer()
                             Button {
-                                addingNewListAlert.toggle()
+                                editingListIdex = Lists.count
+                                Lists.append(list(name: "New List", color: .red, icon: "list.bullet", element: []))
+                                showPopUp.toggle()
                             } label: {
                                 Image(systemName: "plus")
                             }
-                            .alert("Add a list", isPresented: $addingNewListAlert) {
-                                TextField("Enter a title", text: $newItem)
-                                Button("OK") {addNewList()}
-                                Button("Cancel", role: .cancel) {
-                                    addingNewListAlert.toggle()
-                                    newItem = ""
-                                }
-                            }
-
                             EditButton().padding(5)
                         }.textCase(nil)
                     }
@@ -248,7 +242,7 @@ struct ContentView: View {
                     searchbarItem = ""
                 }
                 
-                if !isSearching && !addingNewListAlert{
+                if !isSearching {
                     Text("\(Lists.count) lists")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
@@ -266,7 +260,7 @@ struct ContentView: View {
 
                 }
             }
-            .sheet(isPresented: $showColorPicker) {
+            .sheet(isPresented: $showPopUp) {
                 VStack(spacing: 15) {
                     VStack(spacing: 10) {
                         Circle()
@@ -274,12 +268,15 @@ struct ContentView: View {
                             .shadow(radius: 5, x: 0, y: 0)
                             .frame(width: 100, height: 100)
                             .padding(.vertical, 10)
+                            .animation(.easeInOut(duration: 0.2), value: Lists[editingListIdex].color)
                             .overlay {
                                 Image(systemName: Lists[editingListIdex].icon)
                                     .bold()
                                     .foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.systemGray6))
                                     .font(.system(size: 50))
+                                    .animation(.easeInOut(duration: 0.1), value: Lists[editingListIdex].icon)
                             }
+                            
                         TextField(Lists[editingListIdex].name, text: $Lists[editingListIdex].name)
                             .multilineTextAlignment(.center)
                             .foregroundStyle(Lists[editingListIdex].color)
@@ -361,18 +358,6 @@ struct ContentView: View {
             }//sheet
         }
     }
-    
-    
-    func addNewList() -> Void{
-        if !newItem.isEmpty {
-            Lists.append(list(name: newItem, color: .blue, icon: "List.bullet", element: []))
-            newItem = ""
-        }
-    }
-    
-//    func deleteList(at offsets: IndexSet) {
-//        Lists.remove(atOffsets: offsets)
-//    }
 
     func moveList(from source: IndexSet, to destination: Int) {
         Lists.move(fromOffsets: source, toOffset: destination)
