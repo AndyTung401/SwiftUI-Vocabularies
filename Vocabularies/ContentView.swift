@@ -35,7 +35,7 @@ struct ContentView: View {
     @State private var newItem = ""
     @State private var addingNewWordAlert = false
     @State private var showDict = false
-    @State private var sortingMode = 0 //0:none
+    @State private var sortingMode: Int = 0 //0:none, 1: ascending, 2: descending
     @State private var showPopUp = false
     @State private var editingListIdex = 0
     @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
@@ -53,7 +53,9 @@ struct ContentView: View {
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
             List {
-                ForEach(Array(Lists[listIndexInLists].element.enumerated()), id: \.element.id) { itemIndex, item in
+                ForEach(Array(Lists[listIndexInLists].element.sorted(by: sortingMode == 0 ? 
+                                                                     {$0 != $0 && $1 != $1} : {$0.string < $1.string}
+                                                                    ).enumerated()), id: \.element.id) { itemIndex, item in
                     if item.string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
                             Image(systemName: item.done ? "checkmark.circle.fill" : "circle").foregroundStyle(item.done ? .green : .gray)
@@ -126,7 +128,7 @@ struct ContentView: View {
                 HStack {
                     Spacer()
                     Button {
-                        if isSearching && !searchbarItem.isEmpty {
+                        if isSearching && !searchbarItem.isEmpty && !Lists[listIndexInLists].element.contains(where: {$0.string == searchbarItem} ) {
                             Lists[listIndexInLists].element.append(list.elementInlist(string: searchbarItem, starred:false, done: false))
                             searchbarItem = ""
                         } else if !isSearching || isSearching && searchbarItem.isEmpty {
@@ -139,10 +141,10 @@ struct ContentView: View {
                     }
                     .opacity(addingNewWordAlert ? 0 : 1)
                     .padding()
-                    .alert("Add a word", isPresented: $addingNewWordAlert) {
+                    .alert("Append a new item", isPresented: $addingNewWordAlert) {
                         TextField("Enter something", text: $newItem)
                         Button("OK") {
-                            if !newItem.isEmpty {
+                            if !newItem.isEmpty && !Lists[listIndexInLists].element.contains(where: {$0.string == newItem} ){
                                 Lists[listIndexInLists].element.append(list.elementInlist(string: newItem, starred:false, done: false))
                             }
                             newItem = ""
@@ -372,16 +374,10 @@ struct ContentView: View {
     
     func toggleStarred(_ listIndexInLists: Int, _ itemIndex: Int){
         Lists[listIndexInLists].element[itemIndex].starred.toggle()
-//        if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
-//            Lists[listIndexInLists].element[itemIndex].done.toggle()
-//        }
     }
     
     func toggleDone(_ listIndexInLists: Int, _ itemIndex: Int){
         Lists[listIndexInLists].element[itemIndex].done.toggle()
-//        if Lists[listIndexInLists].element[itemIndex].starred && Lists[listIndexInLists].element[itemIndex].done {
-//            Lists[listIndexInLists].element[itemIndex].starred.toggle()
-//        }
     }
 }
 
