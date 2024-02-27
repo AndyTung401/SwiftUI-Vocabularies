@@ -53,25 +53,25 @@ struct ContentView: View {
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
             List {
-                ForEach(Array(Lists[listIndexInLists].element.indices), id: \.self) { itemIndex in
-                    if Lists[listIndexInLists].element[itemIndex].string.contains(searchbarItem) || searchbarItem == ""{
+                ForEach(Array(Lists[listIndexInLists].element.enumerated()), id: \.element.id) { itemIndex, item in
+                    if item.string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
-                            Image(systemName: Lists[listIndexInLists].element[itemIndex].done ? "checkmark.circle.fill" : "circle").foregroundStyle(Lists[listIndexInLists].element[itemIndex].done ? .green : .gray)
+                            Image(systemName: item.done ? "checkmark.circle.fill" : "circle").foregroundStyle(item.done ? .green : .gray)
                                 .font(.system(size: 20))
                                 .onTapGesture {
                                     toggleDone(listIndexInLists, itemIndex)
                                 }
                             HStack{
-                                Text(Lists[listIndexInLists].element[itemIndex].string)
-                                    .opacity(Lists[listIndexInLists].element[itemIndex].done ? 0.4 : 1)
-                                    .strikethrough(Lists[listIndexInLists].element[itemIndex].done)
+                                Text(item.string)
+                                    .opacity(item.done ? 0.4 : 1)
+                                    .strikethrough(item.done)
                                     Spacer()
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                showDefinition(Lists[listIndexInLists].element[itemIndex].string)
+                                showDefinition(item.string)
                             }
-                            Image(systemName: Lists[listIndexInLists].element[itemIndex].starred ? "star.fill" : "star").foregroundStyle(Color.yellow)
+                            Image(systemName: item.starred ? "star.fill" : "star").foregroundStyle(Color.yellow)
                                 .font(.system(size: 20))
                                 .onTapGesture {
                                     toggleStarred(listIndexInLists, itemIndex)
@@ -174,24 +174,24 @@ struct ContentView: View {
             VStack {
                 List {
                     Section {
-                        ForEach(Array(Lists.indices), id: \.self){ listIndex in
+                        ForEach(Array(Lists.enumerated()), id: \.element.id) { listIndex, list in
                                 NavigationLink{
                                     createListView(listIndexInLists: listIndex)
-                                        .navigationTitle(Lists[listIndex].name)
+                                        .navigationTitle(list.name)
                                 } label: {
                                     HStack {
                                         HStack {
                                             Image(systemName: "circle.fill")
-                                                .foregroundStyle(Lists[listIndex].color)
+                                                .foregroundStyle(list.color)
                                                 .font(.largeTitle)
                                                 .overlay {
-                                                    Image(systemName: Lists[listIndex].icon)
+                                                    Image(systemName: list.icon)
                                                         .font(.headline)
                                                         .foregroundStyle(.white)
                                                 }
                                                 .padding(-1)
                                                 .padding(.leading, -3)
-                                            Text(Lists[listIndex].name)
+                                            Text(list.name)
                                                 .font(.body)
                                         }//hstack for clickable elements
                                         .onTapGesture {
@@ -265,7 +265,7 @@ struct ContentView: View {
                     VStack(spacing: 10) {
                         Circle()
                             .fill(Lists[editingListIdex].color.gradient)
-                            .shadow(radius: 5, x: 0, y: 0)
+                            .shadow(color: colorScheme == .dark ? Color(white: 0, opacity: 0.33) : Lists[editingListIdex].color.opacity(0.3), radius: 10, x: 0, y: 0)
                             .frame(width: 100, height: 100)
                             .padding(.vertical, 10)
                             .animation(.easeInOut(duration: 0.2), value: Lists[editingListIdex].color)
@@ -289,6 +289,7 @@ struct ContentView: View {
                                                 Color(colorScheme == .dark ? .systemGray4 : .systemGray6)
                                             )
                             )
+                        
                     }
                     .padding()
                     .background {
