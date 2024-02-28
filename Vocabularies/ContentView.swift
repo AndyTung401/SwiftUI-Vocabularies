@@ -38,7 +38,7 @@ struct ContentView: View {
     @State private var sortingMode: Int = 0 //0: none, 1: ascending, 2: descending
     @State private var showPopUp = false
     @State private var editingListIdex: Int = 0
-    @State private var selectedFilterOptions: Set<Int> = [0, 1, 2]//0: none, 1: starred, 2: done
+    @State private var selectedFilterOptions: Set<Int> = []//0: starred, 1: done, 2: starred and done
     @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe right to chack an item", starred: false, done: false),
@@ -64,10 +64,29 @@ struct ContentView: View {
         }
     }
     
+    func filtering(_ a: list.elementInlist, _ method: Set<Int>) -> Bool {
+        if method.isEmpty{
+            return true
+        } else if method.contains(0) {
+            if method.contains(1) {
+                return a.starred || a.done
+            } else {
+                return a.starred
+            }
+        } else if method.contains(1) {
+            return a.done
+        } else if method.contains(2) {
+            return a.starred && a.done
+        }
+        else {
+            return false
+        }
+    }
+    
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
             List {
-                ForEach(Array(Lists[listIndexInLists].element.filter {!$0.done} .sorted(by: {sorting($0, $1, sortingMode)}).enumerated()), id: \.element.id) { itemIndex, item in
+                ForEach(Array(Lists[listIndexInLists].element.filter {filtering($0, selectedFilterOptions)} .sorted(by: {sorting($0, $1, sortingMode)}).enumerated()), id: \.element.id) { itemIndex, item in
                     if item.string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
                             Image(systemName: item.done ? "checkmark.circle.fill" : "circle").foregroundStyle(item.done ? .green : .gray)
@@ -179,20 +198,74 @@ struct ContentView: View {
                             sortingMode = 0
                         } label: {
                             Text("Manual")
+                            if sortingMode == 0 {
+                                Image(systemName: "checkmark")
+                            }
                         }
                         Button {
                             sortingMode = 1
                         } label: {
+                            if sortingMode == 1 {
+                                Image(systemName: "checkmark")
+                            }
                             Text("Ascending")
                         }
                         Button {
                             sortingMode = 2
                         } label: {
+                            if sortingMode == 2 {
+                                Image(systemName: "checkmark")
+                            }
                             Text("Descending")
                         }
                     } label: {
                         Label("Sort by", systemImage: "arrow.up.arrow.down")
                         Text("\(["Manual", "Ascending", "Descending"][sortingMode])")
+                    }
+                    
+                    Menu {
+                        Button {
+                            if selectedFilterOptions.contains(0) {
+                                selectedFilterOptions.remove(0)
+                            } else {
+                                selectedFilterOptions.remove(2)
+                                selectedFilterOptions.insert(0)
+                            }
+                        } label: {
+                            Text("Starred")
+                            if selectedFilterOptions.contains(0) {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                        Button {
+                            if selectedFilterOptions.contains(1) {
+                                selectedFilterOptions.remove(1)
+                            } else {
+                                selectedFilterOptions.remove(2)
+                                selectedFilterOptions.insert(1)
+                            }
+                        } label: {
+                            Text("Done")
+                            if selectedFilterOptions.contains(1) {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                        Button {
+                            if selectedFilterOptions.contains(2) {
+                                selectedFilterOptions.remove(2)
+                            } else {
+                                selectedFilterOptions.remove(0)
+                                selectedFilterOptions.remove(1)
+                                selectedFilterOptions.insert(2)
+                            }
+                        } label: {
+                            Text("Starred AND Done")
+                            if selectedFilterOptions.contains(2) {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    } label: {
+                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
