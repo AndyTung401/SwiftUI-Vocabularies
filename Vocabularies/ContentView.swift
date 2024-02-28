@@ -35,9 +35,10 @@ struct ContentView: View {
     @State private var newItem = ""
     @State private var addingNewWordAlert = false
     @State private var showDict = false
-    @State private var sortingMode: Int = 0 //0:none, 1: ascending, 2: descending
+    @State private var sortingMode: Int = 0 //0: none, 1: ascending, 2: descending
     @State private var showPopUp = false
     @State private var editingListIdex: Int = 0
+    @State private var selectedFilterOptions: Set<Int> = [0, 1, 2]//0: none, 1: starred, 2: done
     @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe right to chack an item", starred: false, done: false),
@@ -50,12 +51,23 @@ struct ContentView: View {
                                                               list.elementInlist(string: "Delegate", starred: false, done: false),
                                                               list.elementInlist(string: "Abbreviate", starred: false, done: false)])]
     
+    
+    func sorting(_ a: list.elementInlist, _ b: list.elementInlist, _ method: Int) -> Bool {
+        if method == 0 {
+            return false
+        } else if method == 1 {
+            return a.string < b.string
+        } else if method == 2 {
+            return a.string > b.string
+        } else {
+            return false
+        }
+    }
+    
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
             List {
-                ForEach(Array(Lists[listIndexInLists].element.sorted(by: sortingMode == 0 ? 
-                                                                     {$0 != $0 && $1 != $1} : {$0.string < $1.string}
-                                                                    ).enumerated()), id: \.element.id) { itemIndex, item in
+                ForEach(Array(Lists[listIndexInLists].element.filter {!$0.done} .sorted(by: {sorting($0, $1, sortingMode)}).enumerated()), id: \.element.id) { itemIndex, item in
                     if item.string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
                             Image(systemName: item.done ? "checkmark.circle.fill" : "circle").foregroundStyle(item.done ? .green : .gray)
@@ -75,6 +87,7 @@ struct ContentView: View {
                             }
                             Image(systemName: item.starred ? "star.fill" : "star").foregroundStyle(Color.yellow)
                                 .font(.system(size: 20))
+                                .fontWeight(.light)
                                 .onTapGesture {
                                     toggleStarred(listIndexInLists, itemIndex)
                                 }
@@ -160,12 +173,30 @@ struct ContentView: View {
         .animation(addingNewWordAlert == false ? .easeInOut(duration: 0.2) : .none, value: addingNewWordAlert)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    return
+                Menu {
+                    Menu {
+                        Button {
+                            sortingMode = 0
+                        } label: {
+                            Text("Manual")
+                        }
+                        Button {
+                            sortingMode = 1
+                        } label: {
+                            Text("Ascending")
+                        }
+                        Button {
+                            sortingMode = 2
+                        } label: {
+                            Text("Descending")
+                        }
+                    } label: {
+                        Label("Sort by", systemImage: "arrow.up.arrow.down")
+                        Text("\(["Manual", "Ascending", "Descending"][sortingMode])")
+                    }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
-
             }
         }
         .background(colorScheme == .dark ? Color.black : Color.white)
@@ -182,132 +213,130 @@ struct ContentView: View {
                                         .navigationTitle(list.name)
                                 } label: {
                                     HStack {
-                                        HStack {
-                                            Image(systemName: "circle.fill")
-                                                .foregroundStyle(list.color)
-                                                .font(.largeTitle)
-                                                .overlay {
-                                                    Image(systemName: list.icon)
-                                                        .font(.headline)
-                                                        .foregroundStyle(.white)
-                                                }
-                                                .padding(-1)
-                                                .padding(.leading, -3)
-                                            Text(list.name)
-                                                .font(.body)
-                                        }//hstack for clickable elements
-                                        .onTapGesture {
-                                            editingListIdex = listIndex
-                                            showPopUp = true
-                                        }//on tap gesture
-                                        .sheet(isPresented: $showPopUp) {
-                                            VStack(spacing: 15) {
-                                                VStack(spacing: 10) {
-                                                    Circle()
-                                                        .fill(Lists[editingListIdex].color.gradient)
-                                                        .shadow(color: colorScheme == .dark ? Color(white: 0, opacity: 0.33) : Lists[editingListIdex].color.opacity(0.3), radius: 10, x: 0, y: 0)
-                                                        .frame(width: 100, height: 100)
-                                                        .padding(.vertical, 10)
-                                                        .animation(.easeInOut(duration: 0.2), value: Lists[editingListIdex].color)
-                                                        .overlay {
-                                                            Image(systemName: Lists[editingListIdex].icon)
-                                                                .bold()
-                                                                .foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.systemGray6))
-                                                                .font(.system(size: 50))
-                                                                .animation(.easeInOut(duration: 0.1), value: Lists[editingListIdex].icon)
-                                                        }
-                                                        
-                                                    TextField(Lists[editingListIdex].name, text: $Lists[editingListIdex].name)
-                                                        .multilineTextAlignment(.center)
-                                                        .foregroundStyle(Lists[editingListIdex].color)
-                                                        .font(.title2)
-                                                        .bold()
-                                                        .padding(.vertical, 15)
-                                                        .background(
-                                                                    RoundedRectangle(cornerRadius: 20)
-                                                                        .fill(
-                                                                            Color(colorScheme == .dark ? .systemGray4 : .systemGray6)
-                                                                        )
-                                                        )
-                                                    
-                                                }
-                                                .padding()
-                                                .background {
-                                                    RoundedRectangle(cornerRadius: 20, style: .circular)
-                                                        .fill(
-                                                            Color(colorScheme == .dark ? .systemGray5 : .white)
-                                                        )
-                                                }
-                                                .padding(.top, 25)
-                                                CGPicker(
-                                                    colors: [.red, .orange, .yellow, .green, .cyan, .blue, .indigo, .pink, .purple, .brown, .gray, Color(.init(red: 0.8196078431, green: 0.6588235294, blue: 0.6235294118))],
-                                                    selection: $Lists[editingListIdex].color
-                                                )
-                                                .padding(20)
-                                                .background {
-                                                    RoundedRectangle(cornerRadius: 20, style: .circular)
-                                                        .fill(
-                                                            Color(colorScheme == .dark ? .systemGray5 : .white)
-                                                        )
-                                                }
-                                                VStack(spacing: 15) {
-                                                    ForEach(0..<icons.count/6) { row in // create number of rows
-                                                        HStack(spacing: 5) {
-                                                            ForEach(0..<6) { column in // create 3 columns
-                                                                ZStack {
-                                                                    Image(systemName: icons[row * 6 + column])
-                                                                        .foregroundStyle(Color(colorScheme == .dark ? .white : .init(hue: 0, saturation: 0, brightness: 0.3)))
-                                                                        .bold()
-                                                                        .font(.title3)
-                                                                        .frame(width: 40, height: 40)
-                                                                        .background {
-                                                                            Circle()
-                                                                                .fill(
-                                                                                    Color(colorScheme == .dark ? .systemGray4 : .systemGray6)
-                                                                                )
-                                                                        }
-                                                                        .onTapGesture {
-                                                                            Lists[editingListIdex].icon = icons[row * 6 + column]
-                                                                        }
-                                                                    if Lists[editingListIdex].icon == icons[row * 6 + column] {
-                                                                        Circle()
-                                                                            .fill(Color.clear)
-                                                                            .stroke(Color(colorScheme == .dark ? .systemGray2 : .systemGray3), lineWidth: 3)
-                                                                    }
-                                                                }
-                                                                .frame(width: 50, height: 50)
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                .padding()
-                                                .background {
-                                                    RoundedRectangle(cornerRadius: 20, style: .circular)
-                                                        .fill(
-                                                            Color(colorScheme == .dark ? .systemGray5 : .white)
-                                                        )
-                                                }
-                                                Spacer()
-                                            }//vstack
-                                            .padding()
-                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                            .ignoresSafeArea()
-                                            .presentationBackground(colorScheme == .dark ? Color(.systemGray6):Color(.systemGray6))
-                                            .presentationDragIndicator(.visible)
-                                            .presentationDetents([.fraction(0.9)])
-                                            .presentationCornerRadius(15)
-                                        }//sheet
-                                        .swipeActions(allowsFullSwipe: false) {
-                                            Button(role: .destructive) {
-                                                Lists.remove(at: listIndex)
-                                            } label: {
-                                                Image(systemName: "trash")
+                                        Image(systemName: "circle.fill")
+                                            .foregroundStyle(list.color)
+                                            .font(.largeTitle)
+                                            .overlay {
+                                                Image(systemName: list.icon)
+                                                    .font(.headline)
+                                                    .foregroundStyle(.white)
                                             }
-                                        }//swipe actions
+                                            .padding(-1)
+                                            .padding(.leading, -3)
+                                            .onTapGesture {
+                                                editingListIdex = listIndex
+                                                showPopUp = true
+                                            }//on tap gesture
+                                        Text(list.name)
+                                            .font(.body)
                                         Spacer()
                                         Text("\(Lists[listIndex].element.count)")
                                             .foregroundStyle(.gray)
-                                    }//Hstacl
+                                    }//Hstack
+                                    .swipeActions(allowsFullSwipe: false) {
+                                        Button(role: .destructive) {
+                                            Lists.remove(at: listIndex)
+                                        } label: {
+                                            Image(systemName: "trash")
+                                        }
+                                    }//swipe actions
+                                    .sheet(isPresented: $showPopUp) {
+                                        VStack(spacing: 15) {
+                                            VStack(spacing: 10) {
+                                                Circle()
+                                                    .fill(Lists[editingListIdex].color.gradient)
+                                                    .shadow(color: colorScheme == .dark ? Color(white: 0, opacity: 0.33) : Lists[editingListIdex].color.opacity(0.3), radius: 10, x: 0, y: 0)
+                                                    .frame(width: 100, height: 100)
+                                                    .padding(.vertical, 10)
+                                                    .animation(.easeInOut(duration: 0.2), value: Lists[editingListIdex].color)
+                                                    .overlay {
+                                                        Image(systemName: Lists[editingListIdex].icon)
+                                                            .bold()
+                                                            .foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.systemGray6))
+                                                            .font(.system(size: 50))
+                                                            .animation(.easeInOut(duration: 0.1), value: Lists[editingListIdex].icon)
+                                                    }
+                                                    
+                                                TextField(Lists[editingListIdex].name, text: $Lists[editingListIdex].name)
+                                                    .multilineTextAlignment(.center)
+                                                    .foregroundStyle(Lists[editingListIdex].color)
+                                                    .font(.title2)
+                                                    .bold()
+                                                    .padding(.vertical, 15)
+                                                    .background(
+                                                                RoundedRectangle(cornerRadius: 20)
+                                                                    .fill(
+                                                                        Color(colorScheme == .dark ? .systemGray4 : .systemGray6)
+                                                                    )
+                                                    )
+                                                
+                                            }
+                                            .padding()
+                                            .background {
+                                                RoundedRectangle(cornerRadius: 20, style: .circular)
+                                                    .fill(
+                                                        Color(colorScheme == .dark ? .systemGray5 : .white)
+                                                    )
+                                            }
+                                            .padding(.top, 25)
+                                            CGPicker(
+                                                colors: [.red, .orange, .yellow, .green, .cyan, .blue, .indigo, .pink, .purple, .brown, .gray, Color(.init(red: 0.8196078431, green: 0.6588235294, blue: 0.6235294118))],
+                                                selection: $Lists[editingListIdex].color
+                                            )
+                                            .padding(20)
+                                            .background {
+                                                RoundedRectangle(cornerRadius: 20, style: .circular)
+                                                    .fill(
+                                                        Color(colorScheme == .dark ? .systemGray5 : .white)
+                                                    )
+                                            }
+                                            VStack(spacing: 15) {
+                                                ForEach(0..<icons.count/6) { row in // create number of rows
+                                                    HStack(spacing: 5) {
+                                                        ForEach(0..<6) { column in // create 3 columns
+                                                            ZStack {
+                                                                Image(systemName: icons[row * 6 + column])
+                                                                    .foregroundStyle(Color(colorScheme == .dark ? .white : .init(hue: 0, saturation: 0, brightness: 0.3)))
+                                                                    .bold()
+                                                                    .font(.title3)
+                                                                    .frame(width: 40, height: 40)
+                                                                    .background {
+                                                                        Circle()
+                                                                            .fill(
+                                                                                Color(colorScheme == .dark ? .systemGray4 : .systemGray6)
+                                                                            )
+                                                                    }
+                                                                    .onTapGesture {
+                                                                        Lists[editingListIdex].icon = icons[row * 6 + column]
+                                                                    }
+                                                                if Lists[editingListIdex].icon == icons[row * 6 + column] {
+                                                                    Circle()
+                                                                        .fill(Color.clear)
+                                                                        .stroke(Color(colorScheme == .dark ? .systemGray2 : .systemGray3), lineWidth: 3)
+                                                                }
+                                                            }
+                                                            .frame(width: 50, height: 50)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            .padding()
+                                            .background {
+                                                RoundedRectangle(cornerRadius: 20, style: .circular)
+                                                    .fill(
+                                                        Color(colorScheme == .dark ? .systemGray5 : .white)
+                                                    )
+                                            }
+                                            Spacer()
+                                        }//vstack
+                                        .padding()
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                        .ignoresSafeArea()
+                                        .presentationBackground(colorScheme == .dark ? Color(.systemGray6):Color(.systemGray6))
+                                        .presentationDragIndicator(.visible)
+                                        .presentationDetents([.fraction(0.9)])
+                                        .presentationCornerRadius(15)
+                                    }//sheet
                                 }
                         }//ForEach
                         .onMove(perform: {indicies, newOffest in
