@@ -8,14 +8,103 @@
 import SwiftUI
 import ColorGrid
 
-struct list: Hashable, Identifiable {
+extension Color: Codable {
+  init(hex: String) {
+    let rgba = hex.toRGBA()
+    
+    self.init(.sRGB,
+              red: Double(rgba.r),
+              green: Double(rgba.g),
+              blue: Double(rgba.b),
+              opacity: Double(rgba.alpha))
+  }
+  
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    let hex = try container.decode(String.self)
+    
+    self.init(hex: hex)
+  }
+  
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(toHex)
+  }
+  
+  var toHex: String? {
+    return toHex()
+  }
+  
+  func toHex(alpha: Bool = false) -> String? {
+    guard let components = cgColor?.components, components.count >= 3 else {
+      return nil
+    }
+    
+    let r = Float(components[0])
+    let g = Float(components[1])
+    let b = Float(components[2])
+    var a = Float(1.0)
+    
+    if components.count >= 4 {
+      a = Float(components[3])
+    }
+    
+    if alpha {
+      return String(format: "%02lX%02lX%02lX%02lX",
+                    lroundf(r * 255),
+                    lroundf(g * 255),
+                    lroundf(b * 255),
+                    lroundf(a * 255))
+    }
+    else {
+      return String(format: "%02lX%02lX%02lX",
+                    lroundf(r * 255),
+                    lroundf(g * 255),
+                    lroundf(b * 255))
+    }
+  }
+}
+
+extension String {
+  func toRGBA() -> (r: CGFloat, g: CGFloat, b: CGFloat, alpha: CGFloat) {
+    var hexSanitized = self.trimmingCharacters(in: .whitespacesAndNewlines)
+    hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+    
+    var rgb: UInt64 = 0
+    
+    var r: CGFloat = 0.0
+    var g: CGFloat = 0.0
+    var b: CGFloat = 0.0
+    var a: CGFloat = 1.0
+    
+    let length = hexSanitized.count
+    
+    Scanner(string: hexSanitized).scanHexInt64(&rgb)
+    
+    if length == 6 {
+      r = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+      g = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+      b = CGFloat(rgb & 0x0000FF) / 255.0
+    }
+    else if length == 8 {
+      r = CGFloat((rgb & 0xFF000000) >> 24) / 255.0
+      g = CGFloat((rgb & 0x00FF0000) >> 16) / 255.0
+      b = CGFloat((rgb & 0x0000FF00) >> 8) / 255.0
+      a = CGFloat(rgb & 0x000000FF) / 255.0
+    }
+    
+    return (r, g, b, a)
+  }
+}
+
+struct list: Hashable, Identifiable, Codable {
     var id = UUID()
     var name: String
     var color: Color
     var icon: String
     var element: [elementInlist]
     
-    struct elementInlist: Hashable, Identifiable {
+    struct elementInlist: Hashable, Identifiable, Codable {
         var id = UUID()
         var string: String
         var starred: Bool
@@ -43,16 +132,20 @@ struct ContentView: View {
     @State private var starredOnTop = true
     @State private var doneOnBottom = true
     @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
-                                                              list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
-                                                              list.elementInlist(string: "Swipe right to chack an item", starred: false, done: false),
-                                                              list.elementInlist(string: "Tap and Hold to rearrange", starred: false, done: false),
-                                                              list.elementInlist(string: "↓ Tap on it for definitions", starred: false, done: false),
-                                                              list.elementInlist(string: "Apple", starred: false, done: false),
-                                                              list.elementInlist(string: "Try the search bar", starred: false, done: false)]),
+                                                                                                           list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
+                                                                                                           list.elementInlist(string: "Swipe right to chack an item", starred: false, done: false),
+                                                                                                           list.elementInlist(string: "Tap and Hold to rearrange", starred: false, done: false),
+                                                                                                           list.elementInlist(string: "↓ Tap on it for definitions", starred: false, done: false),
+                                                                                                           list.elementInlist(string: "Apple", starred: false, done: false),
+                                                                                                           list.elementInlist(string: "Try the search bar", starred: false, done: false)]),
                                 list(name: "Tap on the icon to customize", color: .orange, icon: "mappin", element: [list.elementInlist(string: "Constitude", starred: false, done: false),
-                                                              list.elementInlist(string: "Convince", starred: false, done: false),
-                                                              list.elementInlist(string: "Delegate", starred: false, done: false),
-                                                              list.elementInlist(string: "Abbreviate", starred: false, done: false)])]
+                                                                                                                     list.elementInlist(string: "Provision", starred: false, done: false),
+                                                                                                                     list.elementInlist(string: "Convince", starred: false, done: false),
+                                                                                                                     list.elementInlist(string: "Appropriate", starred: false, done: false),
+                                                                                                                     list.elementInlist(string: "Delegate", starred: false, done: false),
+                                                                                                                     list.elementInlist(string: "Adequate", starred: false, done: false),
+                                                                                                                     list.elementInlist(string: "Seduce", starred: false, done: false),
+                                                                                                                     list.elementInlist(string: "Abbreviate", starred: false, done: false)])]
     
     func sortingBool (_ a: Bool, _ b: Bool, _ method: Int, _ orderingOnTop: Bool) -> Bool {
         if !orderingOnTop {
@@ -354,7 +447,7 @@ struct ContentView: View {
                                                                             )
                                                                     }
                                                                     .onTapGesture {
-                                                                        Lists[editingListIdex].icon = icons[row * 6 + column]
+                                                                        Lists.dataArray[editingListIdex].icon = icons[row * 6 + column]
                                                                     }
                                                                 if Lists[editingListIdex].icon == icons[row * 6 + column] {
                                                                     Circle()
