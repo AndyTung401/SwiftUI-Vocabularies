@@ -108,7 +108,7 @@ struct list: Hashable, Identifiable, Codable {
         var id = UUID()
         var string: String
         var starred: Bool
-        var done: Bool
+        var checked: Bool
     }
 }
 
@@ -128,24 +128,24 @@ struct ContentView: View {
     @State private var sortingMode: Int = 0 //0: none, 1: ascending, 2: descending
     @State private var showPopUp = false
     @State private var editingListIdex: Int = 0
-    @State private var selectedFilterOptions: Int = 0//0: none, 1: starred, 2: unstarred
+    @State private var listFilterOption: Int = 0//0: none, 1: starred, 2: unstarred
     @State private var starredOnTop = true
-    @State private var doneOnBottom = true
-    @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
-                                                                                                           list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
-                                                                                                           list.elementInlist(string: "Swipe right to chack an item", starred: false, done: false),
-                                                                                                           list.elementInlist(string: "Tap and Hold to rearrange", starred: false, done: false),
-                                                                                                           list.elementInlist(string: "↓ Tap on it for definitions", starred: false, done: false),
-                                                                                                           list.elementInlist(string: "Apple", starred: false, done: false),
-                                                                                                           list.elementInlist(string: "Try the search bar", starred: false, done: false)]),
-                                list(name: "Tap on the icon to customize", color: .orange, icon: "mappin", element: [list.elementInlist(string: "Constitude", starred: false, done: false),
-                                                                                                                     list.elementInlist(string: "Provision", starred: false, done: false),
-                                                                                                                     list.elementInlist(string: "Convince", starred: false, done: false),
-                                                                                                                     list.elementInlist(string: "Appropriate", starred: false, done: false),
-                                                                                                                     list.elementInlist(string: "Delegate", starred: false, done: false),
-                                                                                                                     list.elementInlist(string: "Adequate", starred: false, done: false),
-                                                                                                                     list.elementInlist(string: "Seduce", starred: false, done: false),
-                                                                                                                     list.elementInlist(string: "Abbreviate", starred: false, done: false)])]
+    @State private var checkedOnBottom = true
+    @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, checked: false),
+                                                                                                           list.elementInlist(string: "Swipe left to remove/star an item", starred: false, checked: false),
+                                                                                                           list.elementInlist(string: "Swipe right to chack an item", starred: false, checked: false),
+                                                                                                           list.elementInlist(string: "Tap and Hold to rearrange", starred: false, checked: false),
+                                                                                                           list.elementInlist(string: "↓ Tap on it for definitions", starred: false, checked: false),
+                                                                                                           list.elementInlist(string: "Apple", starred: false, checked: false),
+                                                                                                           list.elementInlist(string: "Try the search bar", starred: false, checked: false)]),
+                                list(name: "Tap on the icon to customize", color: .orange, icon: "mappin", element: [list.elementInlist(string: "Constitude", starred: false, checked: false),
+                                                                                                                     list.elementInlist(string: "Provision", starred: false, checked: false),
+                                                                                                                     list.elementInlist(string: "Convince", starred: false, checked: false),
+                                                                                                                     list.elementInlist(string: "Appropriate", starred: false, checked: false),
+                                                                                                                     list.elementInlist(string: "Delegate", starred: false, checked: false),
+                                                                                                                     list.elementInlist(string: "Adequate", starred: false, checked: false),
+                                                                                                                     list.elementInlist(string: "Seduce", starred: false, checked: false),
+                                                                                                                     list.elementInlist(string: "Abbreviate", starred: false, checked: false)])]
     
     func sortingBool (_ a: Bool, _ b: Bool, _ method: Int, _ orderingOnTop: Bool) -> Bool {
         if !orderingOnTop {
@@ -182,18 +182,18 @@ struct ContentView: View {
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
             List {
-                ForEach(Array(Lists[listIndexInLists].element.enumerated().filter {filtering($0.1, selectedFilterOptions)}.sorted(by: {sorting($0.1, $1.1, sortingMode)}).sorted(by: {sortingBool($0.1.done, $1.1.done, selectedFilterOptions, doneOnBottom)}).sorted(by: {sortingBool(!$0.1.starred, !$1.1.starred, selectedFilterOptions, starredOnTop)})), id: \.element.id) { itemIndex, item in
+                ForEach(Array(Lists[listIndexInLists].element.enumerated().filter {filtering($0.1, listFilterOption)}.sorted(by: {sorting($0.1, $1.1, sortingMode)}).sorted(by: {sortingBool($0.1.checked, $1.1.checked, listFilterOption, checkedOnBottom)}).sorted(by: {sortingBool(!$0.1.starred, !$1.1.starred, listFilterOption, starredOnTop)})), id: \.element.id) { itemIndex, item in
                     if item.string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
-                            Image(systemName: item.done ? "checkmark.circle.fill" : "circle").foregroundStyle(item.done ? .green : .gray)
+                            Image(systemName: item.checked ? "checkmark.circle.fill" : "circle").foregroundStyle(item.checked ? .green : .gray)
                                 .font(.system(size: 20))
                                 .onTapGesture {
-                                    toggleDone(listIndexInLists, itemIndex)
+                                    toggleChecked(listIndexInLists, itemIndex)
                                 }
                             HStack{
                                 Text(item.string)
-                                    .opacity(item.done ? 0.4 : 1)
-                                    .strikethrough(item.done)
+                                    .opacity(item.checked ? 0.4 : 1)
+                                    .strikethrough(item.checked)
                                     Spacer()
                             }
                             .contentShape(Rectangle())
@@ -209,7 +209,7 @@ struct ContentView: View {
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             Button {
-                                toggleDone(listIndexInLists, itemIndex)
+                                toggleChecked(listIndexInLists, itemIndex)
                             } label: {
                                 Image(systemName: "checkmark.circle")
                             }
@@ -239,7 +239,7 @@ struct ContentView: View {
                     }
                 }
                 .onMove(perform: { indices, newOffset in
-                    if sortingMode != 0 || selectedFilterOptions != 0 {
+                    if sortingMode != 0 || listFilterOption != 0 {
                         showSortFilterAlert = true
                     }
                     Lists[listIndexInLists].element.move(fromOffsets: indices, toOffset: newOffset)
@@ -267,7 +267,7 @@ struct ContentView: View {
                     Spacer()
                     Button {
                         if isSearching && !searchbarItem.isEmpty && !Lists[listIndexInLists].element.contains(where: {$0.string == searchbarItem} ) {
-                            Lists[listIndexInLists].element.append(list.elementInlist(string: searchbarItem, starred:false, done: false))
+                            Lists[listIndexInLists].element.append(list.elementInlist(string: searchbarItem, starred:false, checked: false))
                             searchbarItem = ""
                         } else if !isSearching || isSearching && searchbarItem.isEmpty {
                             addingNewWordAlert = true
@@ -283,7 +283,7 @@ struct ContentView: View {
                         TextField("Enter something", text: $newItem)
                         Button("OK") {
                             if !newItem.isEmpty && !Lists[listIndexInLists].element.contains(where: {$0.string == newItem} ){
-                                Lists[listIndexInLists].element.append(list.elementInlist(string: newItem, starred:false, done: false))
+                                Lists[listIndexInLists].element.append(list.elementInlist(string: newItem, starred:false, checked: false))
                             }
                             newItem = ""
                         }
@@ -300,40 +300,47 @@ struct ContentView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Menu {
-                        Picker(selection: $sortingMode) {
-                            Text("Manual").tag(0)
-                            Text("Ascending").tag(1)
-                            Text("Descending").tag(2)
-                        } label: {
-                            EmptyView()
-                        }
-                    } label: {
-                        Label("Sort by", systemImage: "arrow.up.arrow.down")
-                        Text("\(["Manual", "Ascending", "Descending"][sortingMode])")
-                    }
-                    
-                    Menu {
-                        Picker(selection: $selectedFilterOptions) {
+                        Picker(selection: $listFilterOption) {
                             Text("None").tag(0)
-                            Text("Show only starred").tag(1)
-                            Text("Show only unstarred").tag(2)
+                            Text("Show starred only").tag(1)
+                            Text("Show NON-starred only").tag(2)
                         } label: {
                             EmptyView()
                         }
                     } label: {
                         Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
-                    }
-                    Divider()
-                    Button {
-                        starredOnTop.toggle()
+                        Text("\(["", "Starred only", "NON-starred only"][listFilterOption])")
+                    }//filter menu
+                    
+                    Menu {
+                        Button {
+                            starredOnTop.toggle()
+                        } label: {
+                            Label(starredOnTop ? "Ungroup starred items" : "Group starred items", systemImage: starredOnTop ? "square.slash" : "rectangle.3.group")
+                        }
+                        Button {
+                            checkedOnBottom.toggle()
+                        } label: {
+                            Label(checkedOnBottom ? "Ungroup checked items" : "Group checked items", systemImage: checkedOnBottom ? "square.slash" : "rectangle.3.group")
+                        }
                     } label: {
-                        Label(starredOnTop ? "Ungroup starred items" : "Group starred items", systemImage: starredOnTop ? "square.slash" : "rectangle.3.group")
-                    }
-                    Button {
-                        doneOnBottom.toggle()
+                        Label("Grouping", systemImage: "rectangle.3.group")
+                        Text("\(starredOnTop ? "Stars" : "")\(starredOnTop && checkedOnBottom ? " & " : "")\(checkedOnBottom ? "Checkmarks" : "")")
+                    }//sorting menu
+                    
+                    Menu {
+                        Picker(selection: $sortingMode) {
+                            Text("Manual").tag(0)
+                            Text("Ascending (A→Z)").tag(1)
+                            Text("Descending (Z→A)").tag(2)
+                        } label: {
+                            EmptyView()
+                        }
                     } label: {
-                        Label(doneOnBottom ? "Ungroup done items" : "Group done items", systemImage: doneOnBottom ? "square.slash" : "rectangle.3.group")
-                    }
+                        Label("Sorting", systemImage: "arrow.up.arrow.down")
+                        Text("\(["Manual", "Ascending", "Descending"][sortingMode])")
+                    }//sorting menu
+                    
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
@@ -548,8 +555,8 @@ struct ContentView: View {
         Lists[listIndexInLists].element[itemIndex].starred.toggle()
     }
     
-    func toggleDone(_ listIndexInLists: Int, _ itemIndex: Int){
-        Lists[listIndexInLists].element[itemIndex].done.toggle()
+    func toggleChecked(_ listIndexInLists: Int, _ itemIndex: Int){
+        Lists[listIndexInLists].element[itemIndex].checked.toggle()
     }
 }
 
