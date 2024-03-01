@@ -34,11 +34,13 @@ struct ContentView: View {
     @State private var isSearching = false
     @State private var newItem = ""
     @State private var addingNewWordAlert = false
+    @State private var showSortFilterAlert = false
     @State private var showDict = false
     @State private var sortingMode: Int = 0 //0: none, 1: ascending, 2: descending
     @State private var showPopUp = false
     @State private var editingListIdex: Int = 0
-    @State private var selectedFilterOptions: Set<Int> = []//0: starred, 1: done, 2: starred and done
+    @State private var showDoneItems = false
+    @State private var selectedFilterOptions: Int = 0//0: none, 1: starred, 2: unstarred
     @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe right to chack an item", starred: false, done: false),
@@ -46,7 +48,7 @@ struct ContentView: View {
                                                               list.elementInlist(string: "↓ Tap on it for definitions", starred: false, done: false),
                                                               list.elementInlist(string: "Apple", starred: false, done: false),
                                                               list.elementInlist(string: "Try the search bar", starred: false, done: false)]),
-                                list(name: "Tap on title for settings", color: .orange, icon: "mappin", element: [list.elementInlist(string: "Constitude", starred: false, done: false),
+                                list(name: "Tap on the icon to customize", color: .orange, icon: "mappin", element: [list.elementInlist(string: "Constitude", starred: false, done: false),
                                                               list.elementInlist(string: "Convince", starred: false, done: false),
                                                               list.elementInlist(string: "Delegate", starred: false, done: false),
                                                               list.elementInlist(string: "Abbreviate", starred: false, done: false)])]
@@ -64,29 +66,22 @@ struct ContentView: View {
         }
     }
     
-    func filtering(_ a: list.elementInlist, _ method: Set<Int>) -> Bool {
-        if method.isEmpty{
-            return true
-        } else if method.contains(0) {
-            if method.contains(1) {
-                return a.starred || a.done
-            } else {
-                return a.starred
-            }
-        } else if method.contains(1) {
-            return a.done
-        } else if method.contains(2) {
-            return a.starred && a.done
-        }
-        else {
+    func filtering(_ a: list.elementInlist, _ method: Int) -> Bool {
+        if !showDoneItems && a.done {
             return false
+        } else if method == 1 {
+            return a.starred
+        } else if method == 2 {
+            return !a.starred
+        } else {
+            return true
         }
     }
     
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
             List {
-                ForEach(Array(Lists[listIndexInLists].element.filter {filtering($0, selectedFilterOptions)} .sorted(by: {sorting($0, $1, sortingMode)}).enumerated()), id: \.element.id) { itemIndex, item in
+                ForEach(Array(Lists[listIndexInLists].element.enumerated().filter {filtering($0.1, selectedFilterOptions)} .sorted(by: {sorting($0.1, $1.1, sortingMode)})), id: \.element.id) { itemIndex, item in
                     if item.string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
                             Image(systemName: item.done ? "checkmark.circle.fill" : "circle").foregroundStyle(item.done ? .green : .gray)
@@ -133,9 +128,19 @@ struct ContentView: View {
                             }
                         }
                         .contentShape(Rectangle())
+                        .alert("Turn off sorting and filtering functions to move items", isPresented: $showSortFilterAlert) {
+                            Button {
+                                showSortFilterAlert = false
+                            } label: {
+                                Text("OK")
+                            }
+                        }
                     }
                 }
                 .onMove(perform: { indices, newOffset in
+                    if sortingMode != 0 || selectedFilterOptions != 0 {
+                        showSortFilterAlert = true
+                    }
                     Lists[listIndexInLists].element.move(fromOffsets: indices, toOffset: newOffset)
                     isSearching = false
                     searchbarItem = ""
@@ -194,29 +199,12 @@ struct ContentView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Menu {
-                        Button {
-                            sortingMode = 0
+                        Picker(selection: $sortingMode) {
+                            Text("Manual").tag(0)
+                            Text("Ascending").tag(1)
+                            Text("Descending").tag(2)
                         } label: {
-                            Text("Manual")
-                            if sortingMode == 0 {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                        Button {
-                            sortingMode = 1
-                        } label: {
-                            if sortingMode == 1 {
-                                Image(systemName: "checkmark")
-                            }
-                            Text("Ascending")
-                        }
-                        Button {
-                            sortingMode = 2
-                        } label: {
-                            if sortingMode == 2 {
-                                Image(systemName: "checkmark")
-                            }
-                            Text("Descending")
+                            EmptyView()
                         }
                     } label: {
                         Label("Sort by", systemImage: "arrow.up.arrow.down")
@@ -224,48 +212,21 @@ struct ContentView: View {
                     }
                     
                     Menu {
-                        Button {
-                            if selectedFilterOptions.contains(0) {
-                                selectedFilterOptions.remove(0)
-                            } else {
-                                selectedFilterOptions.remove(2)
-                                selectedFilterOptions.insert(0)
-                            }
+                        Picker(selection: $selectedFilterOptions) {
+                            Text("None").tag(0)
+                            Text("Show starred").tag(1)
+                            Text("Show unstarred").tag(2)
                         } label: {
-                            Text("Starred")
-                            if selectedFilterOptions.contains(0) {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                        Button {
-                            if selectedFilterOptions.contains(1) {
-                                selectedFilterOptions.remove(1)
-                            } else {
-                                selectedFilterOptions.remove(2)
-                                selectedFilterOptions.insert(1)
-                            }
-                        } label: {
-                            Text("Done")
-                            if selectedFilterOptions.contains(1) {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                        Button {
-                            if selectedFilterOptions.contains(2) {
-                                selectedFilterOptions.remove(2)
-                            } else {
-                                selectedFilterOptions.remove(0)
-                                selectedFilterOptions.remove(1)
-                                selectedFilterOptions.insert(2)
-                            }
-                        } label: {
-                            Text("Starred AND Done")
-                            if selectedFilterOptions.contains(2) {
-                                Image(systemName: "checkmark")
-                            }
+                            EmptyView()
                         }
                     } label: {
                         Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                    }
+                    Divider()
+                    Button {
+                        showDoneItems.toggle()
+                    } label: {
+                        Label("Show done items", systemImage: showDoneItems ? "eye.slash" : "eye")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -425,7 +386,7 @@ struct ContentView: View {
                                 .padding(.bottom, 5)
                                 .bold()
                             Text("\(editingListIdex)")
-                                .foregroundStyle(colorScheme == .dark ? .black : .white)
+                                .foregroundStyle(colorScheme == .dark ? Color(.black) : Color(.systemGray6))
                             Spacer()
                             Button {
                                 editingListIdex = Lists.count
