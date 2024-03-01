@@ -447,7 +447,7 @@ struct ContentView: View {
                                                                             )
                                                                     }
                                                                     .onTapGesture {
-                                                                        Lists.dataArray[editingListIdex].icon = icons[row * 6 + column]
+                                                                        Lists[editingListIdex].icon = icons[row * 6 + column]
                                                                     }
                                                                 if Lists[editingListIdex].icon == icons[row * 6 + column] {
                                                                     Circle()
