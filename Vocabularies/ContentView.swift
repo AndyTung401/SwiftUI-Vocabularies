@@ -39,8 +39,9 @@ struct ContentView: View {
     @State private var sortingMode: Int = 0 //0: none, 1: ascending, 2: descending
     @State private var showPopUp = false
     @State private var editingListIdex: Int = 0
-    @State private var showDoneItems = false
     @State private var selectedFilterOptions: Int = 0//0: none, 1: starred, 2: unstarred
+    @State private var starredOnTop = true
+    @State private var doneOnBottom = true
     @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe left to remove/star an item", starred: false, done: false),
                                                               list.elementInlist(string: "Swipe right to chack an item", starred: false, done: false),
@@ -53,6 +54,15 @@ struct ContentView: View {
                                                               list.elementInlist(string: "Delegate", starred: false, done: false),
                                                               list.elementInlist(string: "Abbreviate", starred: false, done: false)])]
     
+    func sortingBool (_ a: Bool, _ b: Bool, _ method: Int, _ orderingOnTop: Bool) -> Bool {
+        if !orderingOnTop {
+            return false
+        } else if !a && b {
+            return true
+        } else {
+            return false
+        }
+    }
     
     func sorting(_ a: list.elementInlist, _ b: list.elementInlist, _ method: Int) -> Bool {
         if method == 0 {
@@ -67,9 +77,7 @@ struct ContentView: View {
     }
     
     func filtering(_ a: list.elementInlist, _ method: Int) -> Bool {
-        if !showDoneItems && a.done {
-            return false
-        } else if method == 1 {
+        if method == 1 {
             return a.starred
         } else if method == 2 {
             return !a.starred
@@ -81,7 +89,7 @@ struct ContentView: View {
     func createListView(listIndexInLists: Int) -> some View {
         ZStack {
             List {
-                ForEach(Array(Lists[listIndexInLists].element.enumerated().filter {filtering($0.1, selectedFilterOptions)} .sorted(by: {sorting($0.1, $1.1, sortingMode)})), id: \.element.id) { itemIndex, item in
+                ForEach(Array(Lists[listIndexInLists].element.enumerated().filter {filtering($0.1, selectedFilterOptions)}.sorted(by: {sorting($0.1, $1.1, sortingMode)}).sorted(by: {sortingBool($0.1.done, $1.1.done, selectedFilterOptions, doneOnBottom)}).sorted(by: {sortingBool(!$0.1.starred, !$1.1.starred, selectedFilterOptions, starredOnTop)})), id: \.element.id) { itemIndex, item in
                     if item.string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
                             Image(systemName: item.done ? "checkmark.circle.fill" : "circle").foregroundStyle(item.done ? .green : .gray)
@@ -214,8 +222,8 @@ struct ContentView: View {
                     Menu {
                         Picker(selection: $selectedFilterOptions) {
                             Text("None").tag(0)
-                            Text("Show starred").tag(1)
-                            Text("Show unstarred").tag(2)
+                            Text("Show only starred").tag(1)
+                            Text("Show only unstarred").tag(2)
                         } label: {
                             EmptyView()
                         }
@@ -224,9 +232,14 @@ struct ContentView: View {
                     }
                     Divider()
                     Button {
-                        showDoneItems.toggle()
+                        starredOnTop.toggle()
                     } label: {
-                        Label("Show done items", systemImage: showDoneItems ? "eye.slash" : "eye")
+                        Label(starredOnTop ? "Ungroup starred items" : "Group starred items", systemImage: starredOnTop ? "square.slash" : "rectangle.3.group")
+                    }
+                    Button {
+                        doneOnBottom.toggle()
+                    } label: {
+                        Label(doneOnBottom ? "Ungroup done items" : "Group done items", systemImage: doneOnBottom ? "square.slash" : "rectangle.3.group")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
