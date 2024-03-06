@@ -128,10 +128,11 @@ struct ContentView: View {
     @State private var sortingMode: Int = 0 //0: none, 1: ascending, 2: descending
     @State private var showPopUp = false
     @State private var editingListIdex: Int = 0
-    @State private var listFilterOption: Int = 0//0: none, 1: starred, 2: unstarred
-    @State private var starredOnTop = true
-    @State private var checkedOnBottom = true
-    @State var Lists: [list] = [list(name: "An exanple list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, checked: false),
+    @State private var listFilterOption: Int = 0 //0: none, 1: starred, 2: unstarred
+    @State private var starredOnTop = false
+    @State private var checkedOnBottom = false
+    @State private var showCheckedItems = true
+    @State var Lists: [list] = [list(name: "An example list", color: .blue, icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, checked: false),
                                                                                                            list.elementInlist(string: "Swipe left to remove/star an item", starred: false, checked: false),
                                                                                                            list.elementInlist(string: "Swipe right to chack an item", starred: false, checked: false),
                                                                                                            list.elementInlist(string: "Tap and Hold to rearrange", starred: false, checked: false),
@@ -147,8 +148,8 @@ struct ContentView: View {
                                                                                                                      list.elementInlist(string: "Seduce", starred: false, checked: false),
                                                                                                                      list.elementInlist(string: "Abbreviate", starred: false, checked: false)])]
     
-    func sortingBool (_ a: Bool, _ b: Bool, _ method: Int, _ orderingOnTop: Bool) -> Bool {
-        if !orderingOnTop {
+    func sortingBool (_ a: Bool, _ b: Bool, _ method: Int, _ groupingOnTop: Bool) -> Bool {
+        if !groupingOnTop {
             return false
         } else if !a && b {
             return true
@@ -170,12 +171,16 @@ struct ContentView: View {
     }
     
     func filtering(_ a: list.elementInlist, _ method: Int) -> Bool {
-        if method == 1 {
-            return a.starred
-        } else if method == 2 {
-            return !a.starred
+        if !showCheckedItems && a.checked {
+            return false
         } else {
-            return true
+            if method == 1 {
+                return a.starred
+            } else if method == 2 {
+                return !a.starred
+            } else {
+                return true
+            }
         }
     }
     
@@ -185,24 +190,29 @@ struct ContentView: View {
                 ForEach(Array(Lists[listIndexInLists].element.enumerated().filter {filtering($0.1, listFilterOption)}.sorted(by: {sorting($0.1, $1.1, sortingMode)}).sorted(by: {sortingBool($0.1.checked, $1.1.checked, listFilterOption, checkedOnBottom)}).sorted(by: {sortingBool(!$0.1.starred, !$1.1.starred, listFilterOption, starredOnTop)})), id: \.element.id) { itemIndex, item in
                     if item.string.contains(searchbarItem) || searchbarItem == ""{
                         HStack {
-                            Image(systemName: item.checked ? "checkmark.circle.fill" : "circle").foregroundStyle(item.checked ? .green : .gray)
+                            Image(systemName: item.checked ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(item.checked ? .green : .gray)
                                 .font(.system(size: 20))
                                 .onTapGesture {
                                     toggleChecked(listIndexInLists, itemIndex)
                                 }
-                            HStack{
+                            HStack {
                                 Text(item.string)
                                     .opacity(item.checked ? 0.4 : 1)
-                                    .strikethrough(item.checked)
+                                    .strikethrough(item.checked && !item.starred)
+                                    .bold(item.starred)
+                                    .underline(item.starred)
                                     Spacer()
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 showDefinition(item.string)
                             }
-                            Image(systemName: item.starred ? "star.fill" : "star").foregroundStyle(Color.yellow)
-                                .font(.system(size: 20))
-                                .fontWeight(.light)
+                            Image(systemName: item.starred ? "star.fill" : "star")
+                                .foregroundStyle(.yellow)
+                                .font(.system(size: item.starred ? 21 : 19))
+                                .fontWeight(.thin)
+                                .frame(width: 25)
                                 .onTapGesture {
                                     toggleStarred(listIndexInLists, itemIndex)
                                 }
@@ -229,7 +239,7 @@ struct ContentView: View {
                             }
                         }
                         .contentShape(Rectangle())
-                        .alert("Turn off sorting and filtering functions to move items", isPresented: $showSortFilterAlert) {
+                        .alert("Turn off grouping, sorting, and filtering to movme items", isPresented: $showSortFilterAlert) {
                             Button {
                                 showSortFilterAlert = false
                             } label: {
@@ -253,7 +263,7 @@ struct ContentView: View {
             
             VStack {
                 Spacer()
-                if !isSearching && !addingNewWordAlert{
+                if !isSearching && !addingNewWordAlert {
                     Text("\(Lists[listIndexInLists].element.count) items")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
@@ -326,7 +336,7 @@ struct ContentView: View {
                     } label: {
                         Label("Grouping", systemImage: "rectangle.3.group")
                         Text("\(starredOnTop ? "Stars" : "")\(starredOnTop && checkedOnBottom ? " & " : "")\(checkedOnBottom ? "Checkmarks" : "")")
-                    }//sorting menu
+                    }//grouping menu
                     
                     Menu {
                         Picker(selection: $sortingMode) {
@@ -340,6 +350,16 @@ struct ContentView: View {
                         Label("Sorting", systemImage: "arrow.up.arrow.down")
                         Text("\(["Manual", "Ascending", "Descending"][sortingMode])")
                     }//sorting menu
+                    
+                    Divider()
+                    
+                    Button {
+                        showCheckedItems.toggle()
+                    } label: {
+                        Text("\(showCheckedItems ? "Hide" : "Show") checked items")
+                        Image(systemName: showCheckedItems ? "eye.slash" : "eye")
+                    }
+
                     
                 } label: {
                     Image(systemName: "ellipsis.circle")
