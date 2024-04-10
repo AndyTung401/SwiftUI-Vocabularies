@@ -101,7 +101,7 @@ struct ContentView: View {
     @State private var newItem = ""
     @State private var showDict = false
     @State private var showPopUp = false
-    @State private var editingListIdex: Int = 0
+    @State private var editingListIndex: Int = 0
     @State private var selectedColor = Color.red
     @State var Lists: [list] = [list(name: "An example list", color: "blue", icon: "list.bullet", element: [list.elementInlist(string: "This is a sample list", starred: false, checked: false),
                                                                                                            list.elementInlist(string: "Swipe left to remove/star an item", starred: false, checked: false),
@@ -141,7 +141,7 @@ struct ContentView: View {
                                             .padding(-1)
                                             .padding(.leading, -3)
                                             .onTapGesture {
-                                                editingListIdex = listIndex
+                                                editingListIndex = listIndex
                                                 showPopUp = true
                                             }//on tap gesture
                                         Text(list.name)
@@ -171,11 +171,11 @@ struct ContentView: View {
                                 .foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.black))
                                 .padding(.bottom, 5)
                                 .bold()
-                            Text("\(editingListIdex)")
+                            Text("\(editingListIndex)")
                                 .foregroundStyle(colorScheme == .dark ? Color(.black) : Color(.systemGray6))
                             Spacer()
                             Button {
-                                editingListIdex = Lists.count
+                                editingListIndex = Lists.count
                                 Lists.append(list(name: "New List", color: "red", icon: "list.bullet", element: []))
                                 saveData()
                                 showPopUp.toggle()
@@ -193,14 +193,15 @@ struct ContentView: View {
                     searchbarItem = ""
                 }
                 
-                if !isSearching {
+//                if !isSearching {
                     Text("\(Lists.count) lists")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
                         .padding()
-                }
+//                }
             }//Vstack
             .background(colorScheme == .dark ? Color.black : Color(UIColor.systemGray6))
+            .ignoresSafeArea(.keyboard)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -221,22 +222,22 @@ struct ContentView: View {
             VStack(spacing: 15) {
                 VStack(spacing: 10) {
                     Circle()
-                        .fill(Color[Lists[editingListIdex].color].gradient)
-                        .shadow(color: colorScheme == .dark ? Color(white: 0, opacity: 0.33) : Color[Lists[editingListIdex].color].opacity(0.3), radius: 10, x: 0, y: 0)
+                        .fill(Color[Lists[editingListIndex].color].gradient)
+                        .shadow(color: colorScheme == .dark ? Color(white: 0, opacity: 0.33) : Color[Lists[editingListIndex].color].opacity(0.3), radius: 10, x: 0, y: 0)
                         .frame(width: 100, height: 100)
                         .padding(.vertical, 10)
-                        .animation(.easeInOut(duration: 0.2), value: Lists[editingListIdex].color)
+                        .animation(.easeInOut(duration: 0.2), value: Lists[editingListIndex].color)
                         .overlay {
-                            Image(systemName: Lists[editingListIdex].icon)
+                            Image(systemName: Lists[editingListIndex].icon)
                                 .bold()
                                 .foregroundStyle(colorScheme == .dark ? Color(.white) : Color(.systemGray6))
                                 .font(.system(size: 47))
-                                .animation(.easeInOut(duration: 0.1), value: Lists[editingListIdex].icon)
+                                .animation(.easeInOut(duration: 0.1), value: Lists[editingListIndex].icon)
                         }
                         
-                    TextField(Lists[editingListIdex].name, text: $Lists[editingListIdex].name)
+                    TextField(Lists[editingListIndex].name, text: $Lists[editingListIndex].name)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(Color[Lists[editingListIdex].color])
+                        .foregroundStyle(Color[Lists[editingListIndex].color])
                         .font(.title2)
                         .bold()
                         .padding(.vertical, 15)
@@ -268,7 +269,7 @@ struct ContentView: View {
                         )
                 }
                 .onChange(of: selectedColor) { oldValue, newValue in
-                    Lists[editingListIdex].color = String[selectedColor]
+                    Lists[editingListIndex].color = String[selectedColor]
                 }
                 VStack(spacing: 15) {
                     ForEach(0..<icons.count/6) { row in // create number of rows
@@ -287,9 +288,9 @@ struct ContentView: View {
                                                 )
                                         }
                                         .onTapGesture {
-                                            Lists[editingListIdex].icon = icons[row * 6 + column]
+                                            Lists[editingListIndex].icon = icons[row * 6 + column]
                                         }
-                                    if Lists[editingListIdex].icon == icons[row * 6 + column] {
+                                    if Lists[editingListIndex].icon == icons[row * 6 + column] {
                                         Circle()
                                             .fill(Color.clear)
                                             .stroke(Color(colorScheme == .dark ? .systemGray2 : .systemGray3), lineWidth: 3)

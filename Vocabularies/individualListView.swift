@@ -20,6 +20,7 @@ struct individualListView: View {
     @State private var isSearching = false
     @State private var addingNewWordAlert = false
     @State private var showSortFilterAlert = false
+    @State private var editListNameAlert = false
     @State private var sortingMode: Int = 0 //0: none, 1: ascending, 2: descending
     
     func sortingBool (_ a: Bool, _ b: Bool, _ method: Int, _ groupingOnTop: Bool) -> Bool {
@@ -151,12 +152,12 @@ struct individualListView: View {
             
             VStack {
                 Spacer()
-                if !isSearching && !addingNewWordAlert {
+//                if !isSearching && !addingNewWordAlert && !editListNameAlert{
                     Text("\(Lists[listIndexInLists].element.count) items")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
                         .padding()
-                }
+//                }
             }
             
             VStack {
@@ -175,7 +176,7 @@ struct individualListView: View {
                             .font(.system(size: 60))
                             .foregroundStyle(.cyan.gradient)
                     }
-                    .opacity(addingNewWordAlert ? 0 : 1)
+//                    .opacity(addingNewWordAlert || editListNameAlert ? 0 : 1)
                     .padding()
                     .alert("Append a new item", isPresented: $addingNewWordAlert) {
                         TextField("Enter something", text: $newItem)
@@ -193,7 +194,8 @@ struct individualListView: View {
                 }
             }
         }
-        .animation(addingNewWordAlert == false ? .easeInOut(duration: 0.2) : .none, value: addingNewWordAlert)
+        .ignoresSafeArea(.keyboard)
+//        .animation(!addingNewWordAlert && !editListNameAlert ? .easeInOut(duration: 0.2) : .none, value: addingNewWordAlert || editListNameAlert)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -248,10 +250,29 @@ struct individualListView: View {
                         Image(systemName: showCheckedItems ? "eye.slash" : "eye")
                     }
 
+                    Divider()
+                    
+                    Button {
+                        editListNameAlert.toggle()
+                        newItem = Lists[listIndexInLists].name
+                    } label: {
+                        Text("Edit list name")
+                        Image(systemName: "pencil")
+                    }
                     
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+            }
+        }
+        .alert("Edit list name", isPresented: $editListNameAlert) {
+            TextField("Enter something", text: $newItem)
+            Button("OK") {
+                Lists[listIndexInLists].name = newItem
+            }
+            Button("Cancel", role: .cancel) {
+                editListNameAlert = false
+                newItem = ""
             }
         }
         .background(colorScheme == .dark ? Color.black : Color.white)
