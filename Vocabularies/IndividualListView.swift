@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct individualListView: View {
+struct IndividualListView: View {
     @Environment(\.colorScheme) var colorScheme
     @Binding var Lists: [list]
     var listIndexInLists: Int
@@ -20,7 +20,7 @@ struct individualListView: View {
     @State private var isSearching = false
     @State private var addingNewWordAlert = false
     @State private var showSortFilterAlert = false
-    @State private var editListNameAlert = false
+    @State private var editListInfoPopUp = false
     @State private var sortingMode: Int = 0 //0: none, 1: ascending, 2: descending
     
     func sortingBool (_ a: Bool, _ b: Bool, _ method: Int, _ groupingOnTop: Bool) -> Bool {
@@ -152,7 +152,7 @@ struct individualListView: View {
             
             VStack {
                 Spacer()
-//                if !isSearching && !addingNewWordAlert && !editListNameAlert{
+//                if !isSearching && !addingNewWordAlert && !editListInfoPopUp{
                     Text("\(Lists[listIndexInLists].element.count) items")
                         .font(.callout)
                         .foregroundStyle(Color.gray)
@@ -166,7 +166,7 @@ struct individualListView: View {
                     Spacer()
                     Button {
                         if isSearching && !searchbarItem.isEmpty && !Lists[listIndexInLists].element.contains(where: {$0.string == searchbarItem} ) {
-                            Lists[listIndexInLists].element.append(list.elementInlist(string: searchbarItem, starred:false, checked: false))
+                            Lists[listIndexInLists].element.insert(list.elementInlist(string: searchbarItem, starred:false, checked: false), at: 0)
                             searchbarItem = ""
                         } else if !isSearching || isSearching && searchbarItem.isEmpty {
                             addingNewWordAlert = true
@@ -176,13 +176,13 @@ struct individualListView: View {
                             .font(.system(size: 60))
                             .foregroundStyle(.cyan.gradient)
                     }
-//                    .opacity(addingNewWordAlert || editListNameAlert ? 0 : 1)
+//                    .opacity(addingNewWordAlert || editListInfoPopUp ? 0 : 1)
                     .padding()
                     .alert("Append a new item", isPresented: $addingNewWordAlert) {
                         TextField("Enter something", text: $newItem)
                         Button("OK") {
                             if !newItem.isEmpty && !Lists[listIndexInLists].element.contains(where: {$0.string == newItem} ){
-                                Lists[listIndexInLists].element.append(list.elementInlist(string: newItem, starred:false, checked: false))
+                                Lists[listIndexInLists].element.insert(list.elementInlist(string: newItem, starred:false, checked: false), at: 0)
                             }
                             newItem = ""
                         }
@@ -195,7 +195,7 @@ struct individualListView: View {
             }
         }
         .ignoresSafeArea(.keyboard)
-//        .animation(!addingNewWordAlert && !editListNameAlert ? .easeInOut(duration: 0.2) : .none, value: addingNewWordAlert || editListNameAlert)
+//        .animation(!addingNewWordAlert && !editListInfoPopUp ? .easeInOut(duration: 0.2) : .none, value: addingNewWordAlert || editListInfoPopUp)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -253,11 +253,11 @@ struct individualListView: View {
                     Divider()
                     
                     Button {
-                        editListNameAlert.toggle()
+                        editListInfoPopUp.toggle()
                         newItem = Lists[listIndexInLists].name
                     } label: {
-                        Text("Edit list name")
-                        Image(systemName: "pencil")
+                        Text("Edit list info")
+                        Image(systemName: "info.circle")
                     }
                     
                 } label: {
@@ -265,15 +265,8 @@ struct individualListView: View {
                 }
             }
         }
-        .alert("Edit list name", isPresented: $editListNameAlert) {
-            TextField("Enter something", text: $newItem)
-            Button("OK") {
-                Lists[listIndexInLists].name = newItem
-            }
-            Button("Cancel", role: .cancel) {
-                editListNameAlert = false
-                newItem = ""
-            }
+        .sheet(isPresented: $editListInfoPopUp){
+            EditListInfoPopUp(Lists: $Lists, editingListIndex: listIndexInLists)
         }
         .background(colorScheme == .dark ? Color.black : Color.white)
     }
