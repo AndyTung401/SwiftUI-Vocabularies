@@ -1,7 +1,7 @@
 ## Description
-A app that helps you arrange vocabularies to memorize.
+A app that can create wordlists and look up words with Apple's built-in dictionary.
 
 ## Features
-- A editable list
+- Create your own wordlists
 - Search bar to search for vocabularies, phrases...
-- Look up words in Apple's built-in dictionary easily
+- Look up anything in Apple's built-in dictionary easily
