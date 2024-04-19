@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		CB07969C2BD2C62C0064DA9B /* ListInfoEditingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB07969B2BD2C62C0064DA9B /* ListInfoEditingView.swift */; };
 		CB45545B2B8C88A6004B1111 /* ColorGrid in Frameworks */ = {isa = PBXBuildFile; productRef = CB45545A2B8C88A6004B1111 /* ColorGrid */; };
-		CB972CA02BB06F29005EE768 /* UserDefaultsStore in Frameworks */ = {isa = PBXBuildFile; productRef = CB972C9F2BB06F29005EE768 /* UserDefaultsStore */; };
 		CB972CA42BBA6DA2005EE768 /* IndividualListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB972CA32BBA6DA2005EE768 /* IndividualListView.swift */; };
 		CBC7E3382B822C22009123AB /* VocabulariesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC7E3372B822C22009123AB /* VocabulariesApp.swift */; };
 		CBC7E33A2B822C22009123AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC7E3392B822C22009123AB /* ContentView.swift */; };
@@ -33,7 +32,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB45545B2B8C88A6004B1111 /* ColorGrid in Frameworks */,
-				CB972CA02BB06F29005EE768 /* UserDefaultsStore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,7 +93,6 @@
 			name = Vocabularies;
 			packageProductDependencies = (
 				CB45545A2B8C88A6004B1111 /* ColorGrid */,
-				CB972C9F2BB06F29005EE768 /* UserDefaultsStore */,
 			);
 			productName = Vocabularies;
 			productReference = CBC7E3342B822C22009123AB /* Vocabularies.app */;
@@ -127,7 +124,6 @@
 			mainGroup = CBC7E32B2B822C22009123AB;
 			packageReferences = (
 				CB4554592B8C88A6004B1111 /* XCRemoteSwiftPackageReference "ColorGrid" */,
-				CB972C9E2BB06F29005EE768 /* XCRemoteSwiftPackageReference "UserDefaultsStore" */,
 			);
 			productRefGroup = CBC7E3352B822C22009123AB /* Products */;
 			projectDirPath = "";
@@ -384,14 +380,6 @@
 				kind = branch;
 			};
 		};
-		CB972C9E2BB06F29005EE768 /* XCRemoteSwiftPackageReference "UserDefaultsStore" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/omaralbeik/UserDefaultsStore.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -399,11 +387,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CB4554592B8C88A6004B1111 /* XCRemoteSwiftPackageReference "ColorGrid" */;
 			productName = ColorGrid;
-		};
-		CB972C9F2BB06F29005EE768 /* UserDefaultsStore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CB972C9E2BB06F29005EE768 /* XCRemoteSwiftPackageReference "UserDefaultsStore" */;
-			productName = UserDefaultsStore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

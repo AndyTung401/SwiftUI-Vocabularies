@@ -1,5 +1,5 @@
 {
-  "originHash" : "1dba0454f6b70d9dbc03e274b5e9a13a9dcea36aba0b2f472f9d23e2b7b8493e",
+  "originHash" : "5dfd9135cff7af621abefde98374fe71e2b49479d299a3b5d90995742d5e2164",
   "pins" : [
     {
       "identity" : "colorgrid",
@@ -8,15 +8,6 @@
       "state" : {
         "branch" : "main",
         "revision" : "bfd627de2c8a8f434dfa68ea3ba1bc6d4f04016b"
-      }
-    },
-    {
-      "identity" : "userdefaultsstore",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/omaralbeik/UserDefaultsStore.git",
-      "state" : {
-        "revision" : "1dce0598eea0f37430534dc6ac3a0e7c63482efc",
-        "version" : "3.0.0"
       }
     }
   ],
