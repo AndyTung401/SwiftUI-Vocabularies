@@ -5,3 +5,7 @@ A app that can create wordlists and look up words with Apple's built-in dictiona
 - Create your own wordlists
 - Search bar to search for vocabularies, phrases...
 - Look up anything in Apple's built-in dictionary easily
+
+Home Page | List Info Editor | Word Lists
+| :---:  | :---: |
+![94C739D9-EA60-4082-A4FA-070CAD5E5F2C](https://github.com/AndyTung401/SwiftUI-Vocabularies/assets/109213867/687773bc-40bf-4468-98e6-68186c657a24) | ![E939B8C5-B421-4E8B-8FE7-637402DDB13F](https://github.com/AndyTung401/SwiftUI-Vocabularies/assets/109213867/f6d4d4df-6960-41b8-ac85-0015ed91379d) | 
