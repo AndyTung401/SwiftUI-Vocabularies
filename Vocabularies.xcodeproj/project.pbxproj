@@ -10,7 +10,6 @@
 		CB07969C2BD2C62C0064DA9B /* ListInfoEditingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB07969B2BD2C62C0064DA9B /* ListInfoEditingView.swift */; };
 		CB45545B2B8C88A6004B1111 /* ColorGrid in Frameworks */ = {isa = PBXBuildFile; productRef = CB45545A2B8C88A6004B1111 /* ColorGrid */; };
 		CB972CA02BB06F29005EE768 /* UserDefaultsStore in Frameworks */ = {isa = PBXBuildFile; productRef = CB972C9F2BB06F29005EE768 /* UserDefaultsStore */; };
-		CB972CA22BBA5565005EE768 /* File in Resources */ = {isa = PBXBuildFile; fileRef = CB972CA12BBA5565005EE768 /* File */; };
 		CB972CA42BBA6DA2005EE768 /* IndividualListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB972CA32BBA6DA2005EE768 /* IndividualListView.swift */; };
 		CBC7E3382B822C22009123AB /* VocabulariesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC7E3372B822C22009123AB /* VocabulariesApp.swift */; };
 		CBC7E33A2B822C22009123AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBC7E3392B822C22009123AB /* ContentView.swift */; };
@@ -20,7 +19,6 @@
 
 /* Begin PBXFileReference section */
 		CB07969B2BD2C62C0064DA9B /* ListInfoEditingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListInfoEditingView.swift; sourceTree = "<group>"; };
-		CB972CA12BBA5565005EE768 /* File */ = {isa = PBXFileReference; lastKnownFileType = text; path = File; sourceTree = "<group>"; };
 		CB972CA32BBA6DA2005EE768 /* IndividualListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndividualListView.swift; sourceTree = "<group>"; };
 		CBC7E3342B822C22009123AB /* Vocabularies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vocabularies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CBC7E3372B822C22009123AB /* VocabulariesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabulariesApp.swift; sourceTree = "<group>"; };
@@ -45,7 +43,6 @@
 		CBC7E32B2B822C22009123AB = {
 			isa = PBXGroup;
 			children = (
-				CB972CA12BBA5565005EE768 /* File */,
 				CBC7E3362B822C22009123AB /* Vocabularies */,
 				CBC7E3352B822C22009123AB /* Products */,
 			);
@@ -148,7 +145,6 @@
 			files = (
 				CBC7E33F2B822C23009123AB /* Preview Assets.xcassets in Resources */,
 				CBC7E33C2B822C23009123AB /* Assets.xcassets in Resources */,
-				CB972CA22BBA5565005EE768 /* File in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
