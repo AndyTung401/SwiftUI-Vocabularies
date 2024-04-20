@@ -6,9 +6,28 @@
 //
 
 import SwiftUI
+import Combine
+
+final class KeyboardMonitor: ObservableObject {
+    @Published var willShow: Bool = false
+    private var cancellables = Set<AnyCancellable>()
+    init() {
+        NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification, object: nil)
+            .sink { _ in
+                self.willShow = true
+            }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: UIResponder.keyboardDidHideNotification, object: nil)
+            .sink { _ in
+                self.willShow = false
+            }
+            .store(in: &cancellables)
+    }
+}
 
 struct IndividualListView: View {
     @Environment(\.colorScheme) var colorScheme
+    @StateObject var monitor = KeyboardMonitor()
     @Binding var Lists: [list]
     var listIndexInLists: Int
     @State private var listFilterOption: Int = 0 //0: none, 1: starred, 2: unstarred
@@ -149,6 +168,14 @@ struct IndividualListView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .searchable(text: $searchbarItem, isPresented: $isSearching, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search for something...")
+            .safeAreaInset(edge: .bottom) {
+                if !monitor.willShow {
+                    Image(systemName: "circle")
+                        .font(.system(size: 60))
+                        .padding()
+                        .opacity(0)
+                }
+            }
             
             VStack {
                 Spacer()
