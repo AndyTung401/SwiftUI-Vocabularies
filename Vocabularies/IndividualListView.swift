@@ -186,7 +186,7 @@ struct IndividualListView: View {
                     }
                     .background{
                         Color.clear
-                            .background(.ultraThinMaterial)
+                            .background(.thinMaterial)
                             .mask {
                                 LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
                             }
