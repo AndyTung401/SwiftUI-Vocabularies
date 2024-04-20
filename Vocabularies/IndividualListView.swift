@@ -159,11 +159,28 @@ struct IndividualListView: View {
                         .padding()
 //                }
             }
+            .ignoresSafeArea(.keyboard)
             
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
+                    Button {
+                        if !searchbarItem.isEmpty {
+                            showDefinition(searchbarItem)
+                        }
+                    } label: {
+                        Image(systemName: "book.closed.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundStyle(.brown.gradient)
+                    }
+                    .background{
+                        Circle()
+                            .padding(5)
+                            .foregroundStyle(Color(.systemBackground))
+                    }
+                    .opacity(isSearching ? 1 : 0)
+                    .animation(.easeInOut, value: isSearching)
                     Button {
                         if isSearching && !searchbarItem.isEmpty && !Lists[listIndexInLists].element.contains(where: {$0.string == searchbarItem} ) {
                             Lists[listIndexInLists].element.insert(list.elementInlist(string: searchbarItem, starred:false, checked: false), at: 0)
@@ -176,9 +193,14 @@ struct IndividualListView: View {
                             .font(.system(size: 60))
                             .foregroundStyle(.cyan.gradient)
                     }
-//                    .opacity(addingNewWordAlert || editListInfoPopUp ? 0 : 1)
-                    .padding()
-                    .alert("Append a new item", isPresented: $addingNewWordAlert) {
+                    .background{
+                        Circle()
+                            .padding(5)
+                            .foregroundStyle(Color(.systemBackground))
+                    }
+                    .opacity(addingNewWordAlert ? 0 : 1)
+                    .animation(!addingNewWordAlert ? .easeInOut(duration: 0.2) : .none, value: addingNewWordAlert)
+                    .alert("Add a new item", isPresented: $addingNewWordAlert) {
                         TextField("Enter something", text: $newItem)
                         Button("OK") {
                             if !newItem.isEmpty && !Lists[listIndexInLists].element.contains(where: {$0.string == newItem} ){
@@ -192,10 +214,9 @@ struct IndividualListView: View {
                         }
                     }
                 }
+                .padding()
             }
-        }
-        .ignoresSafeArea(.keyboard)
-//        .animation(!addingNewWordAlert && !editListInfoPopUp ? .easeInOut(duration: 0.2) : .none, value: addingNewWordAlert || editListInfoPopUp)
+        }//Zstack
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
