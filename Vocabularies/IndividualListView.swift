@@ -179,6 +179,23 @@ struct IndividualListView: View {
             
             VStack {
                 Spacer()
+                Color.black
+                    .containerRelativeFrame(.vertical, count: 4, span: 1, spacing: 0)
+                    .mask {
+                        LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                    }
+                    .background{
+                        Color.clear
+                            .background(.ultraThinMaterial)
+                            .mask {
+                                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                            }
+                    }
+            }
+            .ignoresSafeArea()
+            
+            VStack {
+                Spacer()
 //                if !isSearching && !addingNewWordAlert && !editListInfoPopUp{
                     Text("\(Lists[listIndexInLists].element.count) items")
                         .font(.callout)
