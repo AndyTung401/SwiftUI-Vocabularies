@@ -1,5 +1,5 @@
 ## Description
-A app that can create wordlists and look up words with Apple's built-in dictionary.
+A app that can create wordlists and look up words with Apple's built-in dictionary API.
 
 ## Features
 - Create your own wordlists
