@@ -92,7 +92,7 @@ struct list: Hashable, Identifiable, Codable {
 let icons = ["list.bullet", "bookmark.fill", "mappin", "graduationcap.fill", "backpack.fill", "pencil.and.ruler.fill", "doc.fill", "book.fill", "note.text", "textformat.alt", "highlighter", "book.pages.fill"]
 
 
-struct ContentView: View {
+struct HomePageView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.editMode) private var editMode
     let userDefaults = UserDefaults.standard
@@ -261,5 +261,5 @@ struct ContentView: View {
 
 
 #Preview {
-    ContentView()
+    HomePageView()
 }

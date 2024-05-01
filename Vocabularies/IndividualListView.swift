@@ -176,6 +176,17 @@ struct IndividualListView: View {
                         .opacity(0)
                 }
             }
+            .overlay {
+                if Lists[listIndexInLists].element.isEmpty {
+                    ContentUnavailableView {
+                        Label("No Item", systemImage: "list.bullet.clipboard")
+                    } description: {
+                        Text("Add a new item to the list.")
+                    }
+                } else if isSearching && !searchbarItem.isEmpty && Lists[listIndexInLists].element.filter({$0.string.contains(searchbarItem)}).isEmpty {
+                    ContentUnavailableView.search
+                }
+            }
             
             VStack {
                 Spacer()
